@@ -47,4 +47,4 @@ db_repository/versions/
 db_repository/versions/* 
 
 automium_web.wsgi
-
+*.wsgi
