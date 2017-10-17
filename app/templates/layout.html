@@ -1,0 +1,23 @@
+    
+    <div id="header">                                                                 
+    <div id="header_inside">
+    <img src="/static/images/header.jpg" alt="setalpm" width="999" height="222" border="0" usemap="#Map" /><br />                    
+
+    {% set navigation_bar = [
+    ('/', 'index', 'Главная'),
+    ('/about_us', 'about_us', 'О нас'),
+    ('/contacts', 'contacts', 'Контакты'),
+    ('/services', 'services', 'Услуги'),
+    ('/delivery', 'delivery', 'Доставка')
+    ] -%}
+      {% set active_page = active_page|default('index')-%}
+        <ul class="menu">
+        {% for href, id, caption in navigation_bar %}
+        <li {% if id == active_page %} class="active"{% endif
+          %}><a href="{{ href|e }}">{{ caption|e }}</a>
+        </li>
+        {% endfor %}
+        </ul>
+
+    </div>
+    </div>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="icon" href="/static/images/favicon.ico"/>
+    <title>Avantistyle.ru</title>
+    <link href="{{ url_for('static', filename = 'css/style.css') }}" rel="stylesheet">
+  </head>
+  <body>
+<div class="container">
+
+  
+    <div id="header">                                                                 
+    <div id="header_inside">
+    <img src="/static/images/header.jpg" alt="setalpm" width="999" height="222" border="0" usemap="#Map" /><br />                    
+
+    {% set navigation_bar = [
+    ('/', 'index', 'Главная'),
+    ('/about_us', 'about_us', 'О нас'),
+    ('/contacts', 'contacts', 'Контакты'),
+    ('/services', 'services', 'Услуги'),
+    ('/delivery', 'delivery', 'Доставка')
+    ] -%}
+      {% set active_page = active_page|default('index')-%}
+        <ul class="menu">
+        {% for href, id, caption in navigation_bar %}
+        <li {% if id == active_page %} class="active"{% endif
+          %}><a href="{{ href|e }}">{{ caption|e }}</a>
+        </li>
+        {% endfor %}
+        </ul>
+
+    </div>
+    </div>
+
+<div id="wrapper">  
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissable fade in" >
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        {{ message }} </br>
+    {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
+<div id="content_inside">
+{% include 'sidebar.html' %} 
+
+{% block content %}{% endblock %}
+</div>  
+  <div id="footer">
+    <div id="footer_inside">
+      <ul class="footer_menu">
+        {% for href, id, caption in navigation_bar %}
+        <li>
+          <a href="{{ href|e }}">{{ caption|e }}</a>
+        </li>
+        {% endfor %}
+      </ul><br /><br />
+                                                                                                                                                                                                                                                                                                         
+    </div>
+  </div>
+</div>
+</div>
+  <map name="Map">
+       <area shape="rect" coords="78,45,312,119" href="/index">
+       <area shape="poly" coords="670,87,719,78,727,123,677,130" href="#">
+       <area shape="poly" coords="776,124,818,152,793,189,751,160" href="#">
+       <area shape="poly" coords="834,52,885,61,878,105,828,96" href="#">
+  </map>
+</body>
+</html>
