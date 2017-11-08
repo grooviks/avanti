@@ -9,17 +9,18 @@ def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
 def upload_image(path,file,name):
-    '''загрузка изображения, возвращает путь к файлу'''
-    print(name)
+    '''загрузка изображения'''
     if allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(path,filename)
         file.save(filepath)
+        print('FILEPATH!!!', filepath)
         #конвертируем изображение 
         im = Image.open(filepath)
         #и сохраняем с нужным именеем
         filepath = os.path.join(path,name +'.jpeg')
         im.save(filepath)
+        print(filepath)
         os.remove(os.path.join(path,filename))
         return True
     return False

@@ -3,6 +3,7 @@ from config import UPLOAD_FOLDER_IMG, UPLOAD_FOLDER_FILES
 from app.utils import upload_image
 from app.extensions import db
 from sqlalchemy_mptt.mixins import BaseNestedSets
+import uuid
 
 
 class Product(db.Model):
@@ -24,16 +25,43 @@ class Product(db.Model):
     product_images = db.relationship(
         'ProductImage', back_populates='product', lazy='dynamic')
 
+    def __repr__(self):
+        return self.name
 
-'''    def __init__(self, ip, id_network, owner = None, description = None,
-        comment = None,  number = None, type = None):
-        self.ip = ip
-        self.id_network = id_network
-        self.owner = owner
-        self.description = description
-        self.comment = comment
-        self.number = number
-        self.type = type '''
+    def __init__(self, name,  detail, is_avail, is_hot, is_new, category_id, number = None, price = '0'):
+        self.name = name
+        self.price = price
+        self.number = price
+        self.detail = detail
+        self.is_avail = is_avail
+        self.is_hot = is_hot
+        self.is_new = is_new
+        self.category_id = category_id 
+
+    def save_product_images(self, files):
+        path = os.path.join(UPLOAD_FOLDER_IMG,'products')
+        print(self.id)
+        #str(uuid.uuid4())
+        for file in files: 
+            upload_image(path,file,str(self.id))
+        db.session.add(ProductImage(str(self.id)+'.jpeg'))
+        db.session.commit()
+
+    def save_product_base_image(self, file): 
+        path = os.path.join(UPLOAD_FOLDER_IMG,'products')
+        upload_image(path,file,str(self.id))
+        db.session.add(ProductImage(str(self.id)+'.jpeg', self.id, basic_image=True))
+        db.session.commit()
+
+    def get_base_image_url(self): 
+        file = self.product_images.filter_by(product_id = self.id, basic_image = True ).first()
+        if file:   
+            return 'images/products/'+file.filename
+        return  'images/no-image-available.png'
+
+
+
+
 
 class Category(db.Model, BaseNestedSets):
     __tablename__ = 'categories'
@@ -54,10 +82,18 @@ class Category(db.Model, BaseNestedSets):
 
     def save_category_image(self, file):
         path = os.path.join(UPLOAD_FOLDER_IMG,'categories')
-        print(self.id)
+        print('Save image', self.id)
         upload_image(path,file,str(self.id))
-        db.session.add(CategoryImage(self.id))
+        db.session.add(CategoryImage(str(self.id)+'.jpeg'))
         db.session.commit()
+
+    @staticmethod
+    def full_tree_as_list(parent_id=None):
+        roots = Category.query.filter_by(parent_id=parent_id)
+        full_tree = []
+        for root in roots:
+            full_tree.append(root.drilldown_tree()[0])
+        return full_tree
 
     def __repr__(self):
         return self.name
@@ -81,6 +117,14 @@ class ProductImage(db.Model):
 
     # relations
     product = db.relationship("Product", back_populates="product_images")
+
+    def __repr__(self):
+        return self.filename
+
+    def __init__(self, name, product_id, basic_image=False):
+        self.filename = name
+        self.product_id = product_id
+        self.basic_image = basic_image
 
 class CategoryImage(db.Model):
     __tablename__ = 'category_images'

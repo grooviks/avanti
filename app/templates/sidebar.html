@@ -4,7 +4,7 @@
 				{% set row_class = cycler('color', 'no_color') %}																																																															
 				<ul id="list">
 					{%- for item in cat_list %}
-						<li class="{{ row_class.next() }}"><a href="#">{{ item.name }}</a></li>
+						<li class="{{ row_class.next() }}"><a href="{{ url_for('frontend.category', id = item.id) }}">{{ item.name }}</a></li>
 					{%- endfor %}
 
 					

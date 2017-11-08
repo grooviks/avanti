@@ -1,5 +1,36 @@
 {% extends "base.html" %}
 {% block content %}
 
+			<div id="main_block" class="style1">																																																																													
+				<div id="item">
+					<h4>{{ product.name }}</h4><br />
+					<div class="big_view">
+						<img src="{{ url_for('static', filename='images/products/%s.jpeg'%product.id ) }}" alt="" width="311" height="319" /><br />
+						<span>{{ product.price }} руб.</span>
+					</div>
+					<!--<div class="scroll">
+						<a href="#"><img src="images/pic1.jpg" alt="" width="62" height="62" /></a>
+						<a href="#"><img src="images/pic2.jpg" alt="" width="62" height="62" /></a>
+						<a href="#"><img src="images/pic3.jpg" alt="" width="62" height="62" /></a>
+						<a href="#"><img src="images/pic4.jpg" alt="" width="62" height="62" /></a>
+						<a href="#"><img src="images/pic5.jpg" alt="" width="62" height="62" /></a>
+						<a href="#"><img src="images/pic6.jpg" alt="" width="62" height="62" /></a>
+					</div>-->
+				</div>
+				<div class="description">
+					<p>
+						<strong>Описание: </strong><br /> 
+						<!--
+						erat plaga illum, enim, venio. Tamen causa ut diam torqueo sagaciter inhibeo si quae exerci lobortis. Appellatio vel hos autem, ludus luptatum mauris ratis jugis interdico. Gilvus consequat abico demoveo lenis validus typicus ut commodo. Consequat, eu voco cui eros, euismod quis illum, commodo. Nibh valde tincidunt ex quae ratis meus neo aliquam. Appellatio vel hos autem, ludus luptatum mauris ratis jugis interdico. Gilvus consequat abico demoveo lenis validus typicus ut commodo. Consequat, eu voco cui eros, euismod quis illum, commodo. Nibh valde tincidunt ex quae ratis meus neo aliquam. -->
+						{% markdown %}
+						{{ product.detail }}
+						{% endmarkdown %}
+						
+					</p>
+					<p>
+						<a href="{{ url_for('frontend.services') }}" class="buy">Заказать</a>
+					</p>
+				</div>
+			</div>
 
 {% endblock %}

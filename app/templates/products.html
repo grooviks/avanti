@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% set active_page = "categories" %}
+{% block content %}
+
+{% include 'path.html' %} 
+<div id="main_block">
+<h2>{{ category.name }}</h2>
+
+<div id="items">
+					{%- for item in products %}
+					<div class="item">
+						<img src="{{ url_for('static', filename='images/products/%s.jpeg'%item.id ) }}" alt="" width="202" height="173" /><br/>
+						<a href="{{ url_for('frontend.product', id = item.id) }}" class="view"> {{ item.name }} </a>
+					</div>
+					{%- endfor %}
+</div>
+</div>
+{% endblock %}

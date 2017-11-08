@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import basedir
+from flask.ext.markdown import markdown
 from .extensions import db
 
 
@@ -10,6 +11,7 @@ def create_app():
 	app.config.from_object('config')
 	db.init_app(app)
 	db.app = app
+	markdown(app)
 	register_blueprints(app)
 	#register_debug(app)
 	#register_database(app)

@@ -1,0 +1,11 @@
+<div class="path">
+<a href="{{ url_for('frontend.categories') }}">Каталог </a>
+{%- for root in roots %}
+<span class="separator"></span> 
+{%- if root == category %}
+ {{ root }}
+{% else %}
+<a href="{{ url_for('frontend.category', id = root.id) }}"> {{ root }}</a>
+{% endif %}
+{%- endfor %}
+</div>

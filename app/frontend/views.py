@@ -12,7 +12,7 @@ frontend = Blueprint('frontend', __name__,)
 @frontend.route('/')
 @frontend.route('/index')
 def index():
-    return render_template('index.html')
+	return render_template('index.html')
 
 
 @frontend.route('/about_us')
@@ -22,3 +22,54 @@ def about_us():
 @frontend.context_processor
 def categories_parent_list(): 
     return {"cat_list":[c for c in Category.query.filter_by(parent_id=None)]}
+
+@frontend.route('/categories')
+def categories(): 
+	return render_template('categories.html')
+
+
+@frontend.route('/category/<int:id>')
+def category(id):
+	cat=Category.query.filter_by(id=id).first()
+	roots=cat.path_to_root().all()
+	roots.reverse()
+	if cat.child: 
+		return render_template('category.html', 
+		category=cat,
+		roots=roots)
+	else: 
+		prod=Product.query.filter_by(category_id=cat.id).all()
+		print('Product',prod)
+		return render_template('products.html', 
+		category=cat, 
+		products=prod,
+		roots=roots)
+	#roots = Category.query.all()
+	#for root in roots:
+	#print(cat.drilldown_tree()[0])
+
+
+@frontend.route('/contacts')
+def contacts():
+	return render_template('contacts.html')
+
+
+
+@frontend.route('/services')
+def services():
+	return render_template('services.html')
+
+@frontend.route('/delivery')
+def delivery():
+	return render_template('delivery.html')
+
+
+@frontend.route('/product/<int:id>')
+def product(id):
+	prod=Product.query.filter_by(id=id).first()
+	return render_template('product.html', 
+		product=prod)
+
+#@frontend.route('get_image_category')
+#def get_image_category(id):#
+	#pass

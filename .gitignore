@@ -46,5 +46,14 @@ db_repository
 db_repository/versions/
 db_repository/versions/* 
 
+migrations/
+migrations/*
+
+app/static/images/products/*
+app/static/images/products/
+
+app/static/images/categories/
+app/static/images/categoties/*
+
 automium_web.wsgi
 *.wsgi

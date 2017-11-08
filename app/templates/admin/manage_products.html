@@ -1,5 +1,37 @@
 {% extends "admin/base.html" %}
 {% block content %}
 
+<div id=tables_products>
+
+<table>
+    <col width="10%">
+    <col width="25%">
+    <col width="5%;">
+    <col width="10%">
+    <col width="15%">
+
+	<tr >
+		<th>Фото</th>
+        <th>Название</th>
+        <th>Цена</th>
+        <th>Наличие</th>
+        <th>Категория</th>
+    </tr>
+
+{%- for product in products %}
+
+		<tr>
+    		<td> <img src="{{ url_for('static', filename=product.get_base_image_url() )}}" alt="" width="80" height="50" />  </td>	
+        	<td> {{ product.name }} </td>
+        	<td> {{ product.price }} </td>
+        	<td> {{ product.is_avail }} </td>
+        	<td> {{ product.category }}</td>
+
+		</tr>  
+
+{% endfor %}
+
+</table>
+</div>
 
 {% endblock %}

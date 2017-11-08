@@ -1,0 +1,25 @@
+{% extends "admin/base.html" %}
+
+
+{% block content %}
+
+    <div class="add_form">
+      <form class="form-horizontal" enctype=multipart/form-data  method="post">
+      {% set parent_cat = form.parent.data %}
+      {{ form.hidden_tag() }}
+        {{ form.name(class_="form-control", placeholder="Наименование") }}
+        {{ form.parent (class_="parent")| replace('value="%s"'%parent_cat, 'selected value="%s"'%parent_cat) | safe }}
+        {{ form.description( placeholder="Описание") }}
+        {{ form.image }}
+ 		<br>
+        <input type="submit" value="Изменить" name="submit">
+        <input type="submit" value="Удалить" name="submit">
+          </div>
+        </div>
+       </form>
+    <div class="photo">
+    	<img src="{{ url_for('static', filename='images/categories/%s.jpeg'%category.id ) }}" alt="" width="300" height="200" /><br/>
+    </div> 
+
+
+{% endblock %}

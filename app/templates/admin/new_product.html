@@ -1,5 +1,38 @@
 {% extends "admin/base.html" %}
 {% block content %}
 
+    <div class="add_form">
+      <form class="form-horizontal" enctype=multipart/form-data  method="post">
+      {{ form.hidden_tag() }}
+        {{ form.name(class="form-control", placeholder="Наименование") }}
+        {{ form.category }}
+        {{ form.price }}
+        {{ form.detail( placeholder="Описание") }}
+        <label class="checkbox">
+     		{{ form.is_avail(id="checkbox_avail",class_="checkbox", value="0") }}
+    		<span class="checkbox-custom"></span>
+    		<span class="label">Наличие</span>
+     	</label >
+        <label class="checkbox">
+     		{{ form.is_hot(id="checkbox_hot",class_="checkbox", value="0") }}
+    		<span class="checkbox-custom"></span>
+    		<span class="label">Рекомендуемый товар</span>
+     	</label>
+        <label class="checkbox">
+     		{{ form.is_new(id="checkbox_new",class_="checkbox", value="0") }}
+    		<span class="checkbox-custom"></span>
+    		<span class="label">Новинка</span>
+     	</label>
+        <p> Основное изображение</p>
+        {{ base_img_form.image }}
+        <p> Галерея </p>
+        {{ images_form.images(multiple="") }} 
+ <br>
+             <input type="submit" value="Добавить" name="submit">
+          </div>
+        </div>
+     </form>
+
+
 
 {% endblock %}
