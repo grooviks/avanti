@@ -22,7 +22,7 @@
 
 		<tr>
     		<td> <img src="{{ url_for('static', filename=product.get_base_image_url() )}}" alt="" width="80" height="50" />  </td>	
-        	<td> {{ product.name }} </td>
+        	<td> <a href="{{ url_for('admin.product', id = product.id) }}"> {{ product.name }} </a> </td>
         	<td> {{ product.price }} </td>
         	<td> {{ product.is_avail }} </td>
         	<td> {{ product.category }}</td>

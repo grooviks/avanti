@@ -150,6 +150,9 @@ display:inline;
 border: 0px;
 }
 
+a img{ 
+	border: none; 
+}
 /*.item:hover {
 border: 1px solid #000000;
 }*/
@@ -293,3 +296,4 @@ font-size:11px
 
 .path{font-size:14px;padding:10px 0}
 .path .separator{background:url(/static/images/nav_arrow.gif) 50% 50% no-repeat;display:inline-block;height:9px;width:19px}
+

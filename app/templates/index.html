@@ -13,15 +13,16 @@
 				</div>
 				<div class="news">
 					<img src="/static/images/title3.gif" alt="" width="93" height="30" /><br />
-					<p>Мы рады сообщить, что у нас наконец-то открылся собственный сайт с каталогом товаров! В дальнейшем заказы возможно будет оформлять через интернет.
-					К сожалению, на данный момент возможность заказа есть, только через телефон и электронную почту (sales@avantistyle.ru)</p>
+					<p>Мы рады сообщить, что у нас наконец-то открылся собственный сайт с каталогом товаров!
+					К сожалению, на данный момент возможность заказа есть, только через телефон и электронную почту (sales@avantistyle.ru).
+					В дальнейшем заказы возможно будет оформлять прямо на сайте.</p>
 					<a href="/services">Подробнее</a>
 				</div>
 
 				<div id="items">
 					{%- for item in cat_list %}
 					<div class="item">
-						<img src="{{ url_for('static', filename='images/categories/%s.jpeg'%item.id ) }}" alt="" width="202" height="173" /><br/>
+						<a href="{{ url_for('frontend.category', id = item.id) }}" ><img src="{{ url_for('static', filename='images/categories/%s.jpeg'%item.id ) }}" alt="" width="202" height="173" /> </a> <br/>
 						<a href="{{ url_for('frontend.category', id = item.id) }}" class="view" > {{ item.name }} </a>
 					</div>
 					{%- endfor %}

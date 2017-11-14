@@ -1,7 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from config import basedir
-from flask.ext.markdown import markdown
+from flask_markdown import markdown
 from .extensions import db
 
 

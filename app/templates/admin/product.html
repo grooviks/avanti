@@ -1,5 +1,47 @@
-{% extends "base.html" %}
-{% block content %}
+{% extends "admin/base.html" %}
 
+{% block content %}
+	<div class="add_form">
+      <form class="form-horizontal" enctype=multipart/form-data  method="post">
+      {{ form.hidden_tag() }}
+        {{ form.name(class_="form-control", placeholder="Наименование") }}
+        {{ form.category }}
+        {{ form.price }}
+        {{ form.detail( placeholder="Описание",class_="form-detail-product") }}
+        <label class="checkbox_label">
+     		{{ form.is_avail(id="checkbox_avail",class_="checkbox", value="1") }}
+    		<span class="checkbox-custom"></span>
+    		<span class="label">Наличие</span>
+     	</label > <br>
+
+        <label class="checkbox_label">
+     		{{ form.is_hot(id="checkbox_hot",class_="checkbox", value="0") }}
+    		<span class="checkbox-custom"></span>
+    		<span class="label">Рекомендуемый товар</span>
+     	</label> <br>
+        <label class="checkbox_label">
+     		{{ form.is_new(id="checkbox_new",class_="checkbox", value="0") }}
+    		<span class="checkbox-custom"></span>
+    		<span class="label">Новинка</span>
+     	</label>
+     	 <br>
+
+   	 <div class="buttons2">
+        	<input type="submit" value="Изменить" name="submit">
+        	<input type="submit" value="Удалить" name="submit">
+     </div>
+   </div>
+    </form>
+    <div class="photo">
+    	<img src="{{ url_for('static', filename=product.get_base_image_url()) }}" alt="" width="300" height="200" /><br/>
+    </div> 
+
+    <div class="gallery">
+        {%- for img in product.product_images.all() %}
+        <img src="{{ url_for('static', filename='images/products/%s'%img) }}" alt="" width="150" height="150" /><br/>
+        
+        {% endfor %}
+
+    </div>
 
 {% endblock %}

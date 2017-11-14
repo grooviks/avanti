@@ -11,7 +11,7 @@ class Product(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(300))
-    price = db.Column(db.Numeric(10, 2))
+    price = db.Column(db.Numeric(10, 0))
     number = db.Column(db.Integer)
     detail = db.Column(db.Text)
     tips = db.Column(db.Text)  # add for search speed
@@ -40,11 +40,13 @@ class Product(db.Model):
 
     def save_product_images(self, files):
         path = os.path.join(UPLOAD_FOLDER_IMG,'products')
-        print(self.id)
+        print('FILES!', self.id)
         #str(uuid.uuid4())
         for file in files: 
-            upload_image(path,file,str(self.id))
-        db.session.add(ProductImage(str(self.id)+'.jpeg'))
+            print(file)
+            name=str(uuid.uuid4())
+            upload_image(path,file,name)
+            db.session.add(ProductImage(name+'.jpeg', self.id))
         db.session.commit()
 
     def save_product_base_image(self, file): 
@@ -58,6 +60,10 @@ class Product(db.Model):
         if file:   
             return 'images/products/'+file.filename
         return  'images/no-image-available.png'
+
+    #def get_gallery(self):
+    #    files = self.product_images.all()
+    #    print(files)
 
 
 

@@ -10,7 +10,7 @@
 <div id="items">
 					{%- for item in category.child %}
 					<div class="item">
-						<img src="{{ url_for('static', filename='images/categories/%s.jpeg'%item.id ) }}" alt="" width="202" height="173" /><br/>
+						<a href="{{ url_for('frontend.category', id = item.id) }}" > <img src="{{ url_for('static', filename='images/categories/%s.jpeg'%item.id ) }}" alt="" width="202" height="173" /> </a> <br/>
 						<a href="{{ url_for('frontend.category', id = item.id) }}" class="view" > {{ item.name }} </a>
 					</div>
 					{%- endfor %}

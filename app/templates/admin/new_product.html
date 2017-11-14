@@ -4,25 +4,27 @@
     <div class="add_form">
       <form class="form-horizontal" enctype=multipart/form-data  method="post">
       {{ form.hidden_tag() }}
-        {{ form.name(class="form-control", placeholder="Наименование") }}
+        {{ form.name(class_="form-control", placeholder="Наименование") }}
         {{ form.category }}
         {{ form.price }}
-        {{ form.detail( placeholder="Описание") }}
-        <label class="checkbox">
-     		{{ form.is_avail(id="checkbox_avail",class_="checkbox", value="0") }}
-    		<span class="checkbox-custom"></span>
-    		<span class="label">Наличие</span>
-     	</label >
-        <label class="checkbox">
-     		{{ form.is_hot(id="checkbox_hot",class_="checkbox", value="0") }}
-    		<span class="checkbox-custom"></span>
-    		<span class="label">Рекомендуемый товар</span>
-     	</label>
-        <label class="checkbox">
-     		{{ form.is_new(id="checkbox_new",class_="checkbox", value="0") }}
-    		<span class="checkbox-custom"></span>
-    		<span class="label">Новинка</span>
-     	</label>
+         {{ form.detail( placeholder="Описание",class_="form-detail-product") }}
+        <label class="checkbox_label">
+            {{ form.is_avail(id="checkbox_avail",class_="checkbox", value="1") }}
+            <span class="checkbox-custom"></span>
+            <span class="label">Наличие</span>
+        </label > <br>
+
+        <label class="checkbox_label">
+            {{ form.is_hot(id="checkbox_hot",class_="checkbox", value="0") }}
+            <span class="checkbox-custom"></span>
+            <span class="label">Рекомендуемый товар</span>
+        </label> <br>
+        <label class="checkbox_label">
+            {{ form.is_new(id="checkbox_new",class_="checkbox", value="0") }}
+            <span class="checkbox-custom"></span>
+            <span class="label">Новинка</span>
+        </label>
+         <br>
         <p> Основное изображение</p>
         {{ base_img_form.image }}
         <p> Галерея </p>

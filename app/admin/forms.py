@@ -1,7 +1,6 @@
 from flask_wtf import  Form
 from app.extensions import db
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-#import FlaskForm
 from wtforms import StringField, BooleanField, SelectField, TextAreaField, IntegerField,  SubmitField, FileField
 from wtforms.validators import DataRequired, optional, length, NumberRange
 from wtforms.widgets import TextArea, Input

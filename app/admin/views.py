@@ -30,8 +30,37 @@ def manage_categories():
 
 @admin.route('/product/<id>', methods = ['GET', 'POST'])
 def product(id):
-	#product = Product.query.filter_by(id = id).first()
-	return render_template('admin/product.html')
+	product = Product.query.filter_by(id = id).first()
+	form = ProductForm(obj=product)
+	if form.validate_on_submit():
+		if 	request.form['submit'] == 'Изменить':
+			name = form.name.data
+			price = form.price.data
+			number = form.number.data
+			category_id = form.category.data
+			detail = form.detail.data
+			is_avail = form.is_avail.data
+			is_hot = form.is_avail.data
+			is_new = form.is_avail.data
+			db.session.commit()
+		if base_img_form.image.data:
+			product.save_product_base_image(base_img_form.image.data)
+			print(base_img_form.image.data)
+		if 'images' in request.files:
+			files = request.files.getlist("images")
+			print('IMAGASF', files)
+			product.save_product_images(files)	
+		elif (request.form['submit'] == 'Удалить'):
+			db.session.delete(product)
+			db.session.commit()
+			flash('Удалено!!! ', 'success')
+			return redirect(url_for('admin.manage_products'))
+		else:
+			flash('Ошибка редактирования!!! ', 'danger')
+		return redirect(url_for('admin.category', id = cat.id))
+	return render_template('admin/product.html', 
+		product = product,
+		form = form)
 
 @admin.route('/category/<id>', methods = ['GET', 'POST'])
 def category(id):
@@ -81,9 +110,10 @@ def new_product():
 		if base_img_form.image.data:
 			product.save_product_base_image(base_img_form.image.data)
 			print(base_img_form.image.data)
-		if images_form.images.data:
-			product.save_product_images(images_form.images.data)
-			print(images_form.images.data)
+		if 'images' in request.files:
+			files = request.files.getlist("images")
+			print('IMAGASF', files)
+			product.save_product_images(files)		
 		flash('Продукт добавлен!!! ', 'success')
 		return redirect(url_for('admin.manage_products'))
 	elif request.method == 'POST': 
