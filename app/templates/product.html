@@ -1,22 +1,47 @@
 {% extends "base.html" %}
+{% set active_page = "categories" %}
 {% block content %}
+	<link href="{{ url_for('static', filename = 'css/gallery.css') }}" rel="stylesheet" >	
+	<script src="{{ url_for('static', filename = 'js/jquery-1.4.4.min.js') }}" ></script>
+	<script src="{{ url_for('static', filename = 'js/slides.min.jquery.js') }}" ></script>
 
-			<div id="main_block" class="style1">																																																																													
+	<script>
+		$(function(){
+			$('#item').slides({
+				preload: true,
+				preloadImage: '/static/images/loading.gif',
+				effect: 'slide, fade',
+				crossfade: true,
+				slideSpeed: 200,
+				fadeSpeed: 500,
+				generateNextPrev: true,
+				generatePagination: false
+			});
+		});
+	</script>
+
+
+			<div id="main_block" class="style1">		
+																																																																										
 				<div id="item">
 					<h4>{{ product.name }}</h4><br />
-					<div class="big_view">
-						<img src="{{ url_for('static', filename='images/products/%s.jpeg'%product.id ) }}" alt="" width="311" height="319" /><br />
+					<div id="big_view" class="big_view">
+						<div class="slides_container">
+							{%- for img in product.product_images.all() %}
+							<a href="#"><img src="{{ url_for('static', filename='images/products/%s'%img) }}" width="477" height="320"></a>
+							{% endfor %}
+						</div>
+						
 						<span>{{ product.price }} руб.</span>
 					</div>
-					<!--<div class="scroll">
-						<a href="#"><img src="images/pic1.jpg" alt="" width="62" height="62" /></a>
-						<a href="#"><img src="images/pic2.jpg" alt="" width="62" height="62" /></a>
-						<a href="#"><img src="images/pic3.jpg" alt="" width="62" height="62" /></a>
-						<a href="#"><img src="images/pic4.jpg" alt="" width="62" height="62" /></a>
-						<a href="#"><img src="images/pic5.jpg" alt="" width="62" height="62" /></a>
-						<a href="#"><img src="images/pic6.jpg" alt="" width="62" height="62" /></a>
-					</div>-->
+					<ul class="pagination">
+					        {%- for img in product.product_images.all() %}
+        						<li><a href="#"><img src="{{ url_for('static', filename='images/products/%s'%img) }}" alt="" width="55" /></a></li>
+        
+        					{% endfor %}
+					</ul>
 				</div>
+
 				<div class="description">
 					<p>
 						<strong>Описание: </strong><br /> 

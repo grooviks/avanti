@@ -32,24 +32,24 @@ def manage_categories():
 def product(id):
 	product = Product.query.filter_by(id = id).first()
 	form = ProductForm(obj=product)
+	base_img_form=ProductImageForm()
+	images_form=ProductImagesForm()
 	if form.validate_on_submit():
 		if 	request.form['submit'] == 'Изменить':
-			name = form.name.data
-			price = form.price.data
-			number = form.number.data
-			category_id = form.category.data
-			detail = form.detail.data
-			is_avail = form.is_avail.data
-			is_hot = form.is_avail.data
-			is_new = form.is_avail.data
+			product.name = form.name.data
+			product.price = form.price.data
+			product.number = form.number.data
+			product.category_id = form.category.data
+			product.detail = form.detail.data
+			product.is_avail = form.is_avail.data
+			product.is_hot = form.is_avail.data
+			product.is_new = form.is_avail.data
 			db.session.commit()
-		if base_img_form.image.data:
-			product.save_product_base_image(base_img_form.image.data)
-			print(base_img_form.image.data)
-		if 'images' in request.files:
-			files = request.files.getlist("images")
-			print('IMAGASF', files)
-			product.save_product_images(files)	
+			if base_img_form.image.data:
+				product.save_product_base_image(base_img_form.image.data)
+			if 'images' in request.files:
+				files = request.files.getlist("images")
+				product.save_product_images(files)	
 		elif (request.form['submit'] == 'Удалить'):
 			db.session.delete(product)
 			db.session.commit()
@@ -57,7 +57,7 @@ def product(id):
 			return redirect(url_for('admin.manage_products'))
 		else:
 			flash('Ошибка редактирования!!! ', 'danger')
-		return redirect(url_for('admin.category', id = cat.id))
+		return redirect(url_for('admin.manage_products'))
 	return render_template('admin/product.html', 
 		product = product,
 		form = form)
@@ -66,7 +66,6 @@ def product(id):
 def category(id):
 	cat = Category.query.filter_by(id = id).first()
 	form = CategoryForm(obj=cat)
-	#print(cat.name, cat.parent, cat.category_image)
 	if form.validate_on_submit():
 		if 	request.form['submit'] == 'Изменить':
 			cat.name = form.name.data,
@@ -86,7 +85,9 @@ def category(id):
 	#image in product.product_images.all()
 	return render_template('admin/category.html', 
 		form = form,
-		category = cat)
+		category = cat,
+		base_img_form=base_img_form, 
+		images_form=images_form)
 
 @admin.route('/new_product', methods = ['GET', 'POST'])
 def new_product():
@@ -94,7 +95,6 @@ def new_product():
 	base_img_form=ProductImageForm()
 	images_form=ProductImagesForm()
 	if form.validate_on_submit():
-		print(form.detail.data)
 		product = Product(    
 				name = form.name.data,
     			price = form.price.data,
@@ -109,10 +109,8 @@ def new_product():
 		db.session.commit()
 		if base_img_form.image.data:
 			product.save_product_base_image(base_img_form.image.data)
-			print(base_img_form.image.data)
 		if 'images' in request.files:
 			files = request.files.getlist("images")
-			print('IMAGASF', files)
 			product.save_product_images(files)		
 		flash('Продукт добавлен!!! ', 'success')
 		return redirect(url_for('admin.manage_products'))

@@ -14,13 +14,11 @@ def upload_image(path,file,name):
         filename = secure_filename(file.filename)
         filepath = os.path.join(path,filename)
         file.save(filepath)
-        print('FILEPATH!!!', filepath)
         #конвертируем изображение 
         im = Image.open(filepath)
         #и сохраняем с нужным именеем
         filepath = os.path.join(path,name +'.jpeg')
         im.save(filepath)
-        print(filepath)
         os.remove(os.path.join(path,filename))
         return True
     return False

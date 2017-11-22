@@ -9,7 +9,7 @@
         {{ form.price }}
          {{ form.detail( placeholder="Описание",class_="form-detail-product") }}
         <label class="checkbox_label">
-            {{ form.is_avail(id="checkbox_avail",class_="checkbox", value="1") }}
+            {{ form.is_avail(checked=True, id="checkbox_avail",class_="checkbox", value="1") }}
             <span class="checkbox-custom"></span>
             <span class="label">Наличие</span>
         </label > <br>
@@ -24,9 +24,10 @@
             <span class="checkbox-custom"></span>
             <span class="label">Новинка</span>
         </label>
-         <br>
+        <br>
         <p> Основное изображение</p>
         {{ base_img_form.image }}
+        <br>
         <p> Галерея </p>
         {{ images_form.images(multiple="") }} 
  <br>

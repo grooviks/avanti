@@ -1,9 +1,10 @@
 import json, os 
+import uuid
 from config import UPLOAD_FOLDER_IMG, UPLOAD_FOLDER_FILES
 from app.utils import upload_image
 from app.extensions import db
 from sqlalchemy_mptt.mixins import BaseNestedSets
-import uuid
+
 
 
 class Product(db.Model):
@@ -40,10 +41,7 @@ class Product(db.Model):
 
     def save_product_images(self, files):
         path = os.path.join(UPLOAD_FOLDER_IMG,'products')
-        print('FILES!', self.id)
-        #str(uuid.uuid4())
         for file in files: 
-            print(file)
             name=str(uuid.uuid4())
             upload_image(path,file,name)
             db.session.add(ProductImage(name+'.jpeg', self.id))
@@ -88,7 +86,6 @@ class Category(db.Model, BaseNestedSets):
 
     def save_category_image(self, file):
         path = os.path.join(UPLOAD_FOLDER_IMG,'categories')
-        print('Save image', self.id)
         upload_image(path,file,str(self.id))
         db.session.add(CategoryImage(str(self.id)+'.jpeg'))
         db.session.commit()
