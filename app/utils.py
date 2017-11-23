@@ -22,3 +22,11 @@ def upload_image(path,file,name):
         os.remove(os.path.join(path,filename))
         return True
     return False
+
+def delete_image(path):
+    ''' удаление файла '''
+    if os.path.exists(path): 
+        os.remove(path)
+        return True
+    return False
+

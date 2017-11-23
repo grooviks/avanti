@@ -46,11 +46,13 @@ def product(id):
 			product.is_new = form.is_avail.data
 			db.session.commit()
 			if base_img_form.image.data:
+				product.delete_product_images(basic_image=True)
 				product.save_product_base_image(base_img_form.image.data)
 			if 'images' in request.files:
 				files = request.files.getlist("images")
 				product.save_product_images(files)	
 		elif (request.form['submit'] == 'Удалить'):
+			product.delete_product_images()
 			db.session.delete(product)
 			db.session.commit()
 			flash('Удалено!!! ', 'success')
@@ -73,8 +75,10 @@ def category(id):
 			#cat.parent_id = form.parent.data
 			db.session.commit()
 			if form.image.data:
+				cat.delete_category_image()
 				cat.save_category_image(form.image.data)
 		elif (request.form['submit'] == 'Удалить'):
+			cat.delete_category_image()
 			db.session.delete(cat)
 			db.session.commit()
 			flash('Удалено!!! ', 'success')
@@ -85,9 +89,7 @@ def category(id):
 	#image in product.product_images.all()
 	return render_template('admin/category.html', 
 		form = form,
-		category = cat,
-		base_img_form=base_img_form, 
-		images_form=images_form)
+		category = cat)
 
 @admin.route('/new_product', methods = ['GET', 'POST'])
 def new_product():
@@ -107,9 +109,10 @@ def new_product():
 			)
 		db.session.add(product)
 		db.session.commit()
+		print(base_img_form.image.data)
 		if base_img_form.image.data:
 			product.save_product_base_image(base_img_form.image.data)
-		if 'images' in request.files:
+		if request.files['images'].filename:
 			files = request.files.getlist("images")
 			product.save_product_images(files)		
 		flash('Продукт добавлен!!! ', 'success')

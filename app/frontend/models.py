@@ -1,7 +1,7 @@
 import json, os 
 import uuid
 from config import UPLOAD_FOLDER_IMG, UPLOAD_FOLDER_FILES
-from app.utils import upload_image
+from app.utils import upload_image, delete_image
 from app.extensions import db
 from sqlalchemy_mptt.mixins import BaseNestedSets
 
@@ -30,7 +30,7 @@ class Product(db.Model):
         return self.name
 
     def __init__(self, name,  detail, is_avail, is_hot, is_new, category_id, number = None, price = '0'):
-        self.name = name
+        self.name = name.strip()
         self.price = price
         self.number = price
         self.detail = detail
@@ -58,6 +58,16 @@ class Product(db.Model):
         if file:   
             return 'images/products/'+file.filename
         return  'images/no-image-available.png'
+
+    def delete_product_images(self, basic_image=False):
+        if basic_image: 
+            files = self.product_images.filter_by(product_id = self.id, basic_image = True ).first()
+        else: 
+            files = self.product_images.all()
+        path = os.path.join(UPLOAD_FOLDER_IMG,'products')
+        for file in files : 
+            if delete_image(os.path.join(path, file.filename)):
+                db.session.delete(file)
 
     #def get_gallery(self):
     #    files = self.product_images.all()
@@ -89,6 +99,17 @@ class Category(db.Model, BaseNestedSets):
         upload_image(path,file,str(self.id))
         db.session.add(CategoryImage(str(self.id)+'.jpeg'))
         db.session.commit()
+    
+    def delete_category_image(self):
+        files = self.category_image.all()
+        path = os.path.join(UPLOAD_FOLDER_IMG,'categories')
+        for file in files : 
+            print(file.filename)
+            if delete_image(os.path.join(path, file.filename)):
+                db.session.delete(file)
+
+
+        
 
     @staticmethod
     def full_tree_as_list(parent_id=None):
@@ -104,7 +125,7 @@ class Category(db.Model, BaseNestedSets):
     def __init__(self, parent_id, name, description=None):
         if parent_id :
             self.parent_id = int(parent_id) 
-        self.name = name
+        self.name = name.strip()
         self.description = description
         
 

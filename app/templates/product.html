@@ -31,8 +31,11 @@
 							<a href="#"><img src="{{ url_for('static', filename='images/products/%s'%img) }}" width="477" height="320"></a>
 							{% endfor %}
 						</div>
-						
+						{%- if  product.price %}
 						<span>{{ product.price }} руб.</span>
+						{% else %}
+						<span>Цена не указана</span>
+						{% endif %}
 					</div>
 					<ul class="pagination">
 					        {%- for img in product.product_images.all() %}

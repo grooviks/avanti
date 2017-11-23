@@ -39,7 +39,6 @@ def category(id):
 		roots=roots)
 	else: 
 		prod=Product.query.filter_by(category_id=cat.id).all()
-		print('Product',prod)
 		return render_template('products.html', 
 		category=cat, 
 		products=prod,
