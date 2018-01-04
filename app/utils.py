@@ -2,6 +2,7 @@ import os
 from PIL import Image
 from config import ALLOWED_EXTENSIONS
 from werkzeug import secure_filename
+import bcrypt
 
 
 def allowed_file(filename):
@@ -30,3 +31,15 @@ def delete_image(path):
         return True
     return False
 
+
+def encrypt(password, salt=None):
+    ''' хэширование пароля для сохранения в базе '''
+    return bcrypt.hashpw(password.encode('utf-8'), salt if salt else bcrypt.gensalt())
+
+
+def decrypt(password, hashed):
+    ''' сравнение хэшей двух паролей '''
+    if bcrypt.hashpw(password.encode('utf-8'), hashed.encode('utf-8')) == hashed.encode('utf-8'):
+        return True
+    else:
+        return False

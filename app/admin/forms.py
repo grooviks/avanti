@@ -1,11 +1,12 @@
 from flask_wtf import  Form
 from app.extensions import db
 from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms import StringField, BooleanField, SelectField, TextAreaField, IntegerField,  SubmitField, FileField
-from wtforms.validators import DataRequired, optional, length, NumberRange
+from wtforms import StringField, BooleanField, SelectField, TextAreaField, IntegerField,  SubmitField, FileField, PasswordField, RadioField
+from wtforms.validators import DataRequired, optional, Length, NumberRange, Email, EqualTo
 from wtforms.widgets import TextArea, Input
 #from flask_wtf.file import FileField, FileAllowed, FileRequired
 from app.frontend import Product, Category
+from app import constants as USER
 
 
 
@@ -89,3 +90,28 @@ class ProductImageForm(Form):
 
 class ProductImagesForm(Form):
     images = FileField('ImageFiles')
+
+class LoginForm(Form):
+    username = StringField('username',validators=[DataRequired()])
+    password = PasswordField('password',validators=[DataRequired()])
+    remember_me = BooleanField('remember_me', default = False)
+
+class UserForm(Form):
+    username = StringField('username',validators=[DataRequired()], render_kw={ 'placeholder': 'Имя пользователя' })
+    password = PasswordField('password',validators=[DataRequired(), EqualTo('password_confirm', message = 'Пароли не совпадают' ), Length(6.20) ], render_kw={ 'placeholder': 'Пароль' } )
+    email = StringField('email', validators=[DataRequired(), Email()], render_kw={ 'placeholder': 'E-Mail' } ) 
+    password_confirm = PasswordField('repeat password', render_kw={ 'placeholder': 'Повтор пароля' })
+    full_name = StringField('full_name', validators=[Length(0, 64)], render_kw={ 'placeholder': 'ФИО' })
+    phone = StringField('phone', render_kw={ 'placeholder': 'Телефон' })
+    status = RadioField(choices=USER.STATUS.items(), default='2')
+    role = RadioField(choices=USER.ROLE.items(), default='2')
+
+class EditUserForm(Form):
+
+    username = StringField('username',validators=[DataRequired()], render_kw={ 'placeholder': 'Имя пользователя' })
+    email = StringField('email', validators=[DataRequired(), Email()], render_kw={ 'placeholder': 'E-Mail' } ) 
+    full_name = StringField('full_name', validators=[Length(0, 64)], render_kw={ 'placeholder': 'ФИО' })
+    phone = StringField('phone', render_kw={ 'placeholder': 'Телефон' })
+    status = RadioField(choices=USER.STATUS.items())
+    role = RadioField(choices=USER.ROLE.items())
+

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8"/>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="icon" href="/static/images/favicon.ico"/>
+    <title>Avantistyle login</title>
+    <link rel="stylesheet" href="/static/css/login.css">
+  </head>
+<body>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }} alert-dismissable fade in" >
+        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+        {{ message }} </br>
+    {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+
+
+
+<div id="login-form">
+  <h1>Авторизация</h1>
+  <fieldset>
+      <form class="form-horizontal" enctype=multipart/form-data  method="post">
+      {{ form.hidden_tag() }}
+        {{ form.username(placeholder="Имя пользователя") }}
+        {{ form.password(placeholder="Пароль") }}
+      <label>
+     {{form.remember_me (id="checkbox",class_="checkbox") }}
+    <span class="checkbox-custom"></span>
+    <span class="label">Запомнить</span>
+     </label>
+        
+        <input type="submit" value="ВОЙТИ" name="submit">
+      </form>
+  </fieldset>
+</div>
+</body>
+</html>

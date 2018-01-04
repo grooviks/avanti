@@ -1,14 +1,19 @@
 from flask import Blueprint, render_template, current_app, request, flash, \
-    url_for, redirect, session, abort
+    url_for, redirect, session, abort, g
+
+from flask_login import current_user, login_user, logout_user, login_required
 
 from app.frontend import Product, Category
-from .forms import ProductForm, CategoryForm, ProductImageForm, ProductImagesForm
+from .forms import ProductForm, CategoryForm, ProductImageForm, ProductImagesForm, LoginForm, UserForm, EditUserForm
 from app.extensions import db
+from .models import User
+from app.utils import decrypt
 
 admin = Blueprint('admin', __name__, url_prefix='/admin', static_folder='static')
 
 @admin.route('/')
 @admin.route('/index')
+@login_required
 def index():
 	#if current_user.is_authenticated:
     #    return redirect(url_for('user.profile'))
@@ -17,6 +22,7 @@ def index():
 
 
 @admin.route('/manage_products')
+@login_required
 def manage_products():
 	products = Product.query.all()
 
@@ -24,11 +30,13 @@ def manage_products():
 		products=products)
 
 @admin.route('/manage_categories')
+@login_required
 def manage_categories():
 	return render_template('admin/manage_categories.html', 
 		category=Category.full_tree_as_list())
 
 @admin.route('/product/<id>', methods = ['GET', 'POST'])
+@login_required
 def product(id):
 	product = Product.query.filter_by(id = id).first()
 	form = ProductForm(obj=product)
@@ -65,6 +73,7 @@ def product(id):
 		form = form)
 
 @admin.route('/category/<id>', methods = ['GET', 'POST'])
+@login_required
 def category(id):
 	cat = Category.query.filter_by(id = id).first()
 	form = CategoryForm(obj=cat)
@@ -92,6 +101,7 @@ def category(id):
 		category = cat)
 
 @admin.route('/new_product', methods = ['GET', 'POST'])
+@login_required
 def new_product():
 	form=ProductForm()
 	base_img_form=ProductImageForm()
@@ -126,6 +136,7 @@ def new_product():
 
 
 @admin.route('/new_category', methods = ['GET', 'POST'])
+@login_required
 def new_category():
 	form = CategoryForm()
 	if form.validate_on_submit():
@@ -144,3 +155,76 @@ def new_category():
 		form = form)
 
 
+@admin.route('/login', methods=['GET', 'POST'])
+def login(): 
+	form = LoginForm()
+	if form.validate_on_submit():
+		username = form.username.data
+		password = form.password.data
+		remember_me = form.remember_me.data
+		user = User.query.filter_by(username=username).first()
+		if user: 
+			if decrypt(password, user.password): 
+				login_user(user, remember=remember_me)
+				return redirect(url_for('admin.index'))
+			else: 
+				flash('Неверный пароль!!', 'warning')
+		else: 
+			flash('Пользователь не существует!', 'warning')
+	return render_template('admin/login.html', 
+		form=form)
+
+@admin.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('admin.login'))
+
+@admin.route('/new_user', methods = ['GET', 'POST'])
+@login_required
+def new_user(): 
+	form = UserForm()
+	if form.validate_on_submit():	
+		user = User(username = form.username.data,
+					password = form.password.data,
+					email = form.email.data, 
+					full_name = form.full_name.data, 
+					phone = form.phone.data, 
+					status = form.status.data, 
+					role = form.role.data)
+		db.session.add(user)
+		db.session.commit()
+	return render_template('admin/new_user.html', 
+		form=form)
+
+@admin.route('/manage_users', methods  = ['GET', 'POST'])
+@login_required
+def manage_users(): 
+	return render_template('admin/manage_users.html', 
+		users = User.query.all())
+
+@admin.route('/user/<int:id>', methods  = ['GET', 'POST'])
+@login_required
+def user(id): 
+	user = User.query.filter_by(id = id).first()
+	form = EditUserForm(obj=user)
+	if form.validate_on_submit():
+		if 	request.form['submit'] == 'Изменить':
+			user.username = form.username.data
+			user.email = form.email.data
+			user.full_name = form.full_name.data
+			user.phone = form.phone.data
+			user.status = form.status.data
+			user.role = form.role.data
+			db.session.commit()
+			flash('Пользователь изменен!!', 'success')
+		elif (request.form['submit'] == 'Удалить'):
+			db.session.delete(user)
+			db.session.commit()
+			flash('Удалено!!! ', 'success')
+			return redirect(url_for('admin.manage_users'))
+		else:
+			flash('Ошибка редактирования!!! ', 'danger')
+	return render_template('admin/user.html', 
+		user = user,
+		form = form)

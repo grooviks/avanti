@@ -52,15 +52,13 @@ def category(id):
 def contacts():
 	return render_template('contacts.html')
 
-
-
 @frontend.route('/services')
 def services():
 	return render_template('services.html')
 
-@frontend.route('/delivery')
-def delivery():
-	return render_template('delivery.html')
+@frontend.route('/payment')
+def payment():
+	return render_template('payment.html')
 
 
 @frontend.route('/product/<int:id>')

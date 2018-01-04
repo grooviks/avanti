@@ -1,0 +1,37 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+<div id=tables_users>
+
+<table>
+    <col width="10%">
+    <col width="25%">
+    <col width="5%;">
+    <col width="10%">
+    <col width="15%">
+
+	<tr >
+		<th>ID</th>
+        <th>Логин</th>
+        <th>E-Mail</th>
+        <th>Статус</th>
+        <th>Роль</th>
+    </tr>
+
+{%- for user in users %}
+
+		<tr>
+    		<td> {{ user.id }} </td>	
+        	<td> <a href="{{ url_for('admin.user', id = user.id) }}"> {{ user.username }} </a> </td>
+        	<td> {{ user.email }} </td>
+        	<td> {{ user.get_status }} </td>
+            <td> {{ user.get_role }} </td>
+
+		</tr>  
+
+{% endfor %}
+
+</table>
+</div>
+
+{% endblock %}

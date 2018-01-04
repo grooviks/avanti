@@ -1,0 +1,24 @@
+{% extends "admin/base.html" %}
+{% block content %}
+
+
+    <div class="add_form">
+      <form class="form-horizontal" enctype=multipart/form-data  method="post">
+      {{ form.hidden_tag() }}
+        {{ form.username }}
+        {{ form.email }}
+        {{ form.full_name }}
+        {{ form.phone }}
+        {{ form.status }}
+        {{ form.role }}
+ <br>
+             <div class="buttons2">
+          <input type="submit" value="Изменить" name="submit">
+          <input type="submit" value="Удалить" name="submit">
+     </div>
+          </div>
+        </div>
+       </form>
+
+
+{% endblock %}

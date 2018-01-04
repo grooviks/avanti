@@ -96,6 +96,9 @@ overflow:hidden;
 float:left;
 width:752px;
 }
+#main_block .info{
+font-size: 13px
+}
 .about{
 padding:13px 0 0 0;
 width:450px;
