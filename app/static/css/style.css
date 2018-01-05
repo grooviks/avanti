@@ -309,6 +309,17 @@ padding:0px;
 font-size:11px
 }
 
-.path{font-size:14px;padding:10px 0}
+.path{
+	font-size:14px;
+	padding:10px 0; 
+	color: #464646;
+}
 .path .separator{background:url(/static/images/nav_arrow.gif) 50% 50% no-repeat;display:inline-block;height:9px;width:19px}
 
+.path a:visited{
+	color: #464646;
+}
+
+.path a:hover{
+	text-decoration:none;
+}

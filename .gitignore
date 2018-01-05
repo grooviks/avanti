@@ -57,3 +57,6 @@ app/static/images/categoties/*
 
 automium_web.wsgi
 *.wsgi
+
+Thumbs.db
+Thumbs*

@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, current_app, request, flash, \
-    url_for, redirect, session, abort
+    url_for, redirect, session, abort, send_from_directory
 from .models import Category, Product
 #from flask import render_template, flash, redirect, url_for, request, json
 #from app import app, db
@@ -7,7 +7,7 @@ from .models import Category, Product
 #from app.models import spares, networks, devices, persons, company, servers
 #from config import ALLOWED_EXTENSIONS, UPLOAD_FOLDER_IMG, UPLOAD_FOLDER_FILES
 
-frontend = Blueprint('frontend', __name__,)
+frontend = Blueprint('frontend', __name__, static_folder='static')
 
 @frontend.route('/')
 @frontend.route('/index')
@@ -70,3 +70,8 @@ def product(id):
 #@frontend.route('get_image_category')
 #def get_image_category(id):#
 	#pass
+
+@frontend.route('/robots.txt')
+def static_from_root():
+	print(current_app.static_folder)
+	return send_from_directory(current_app.static_folder, request.path[1:])
