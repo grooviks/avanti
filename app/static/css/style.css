@@ -316,7 +316,7 @@ font-size:11px
 }
 .path .separator{background:url(/static/images/nav_arrow.gif) 50% 50% no-repeat;display:inline-block;height:9px;width:19px}
 
-.path a:visited{
+.path a{
 	color: #464646;
 }
 
