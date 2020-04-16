@@ -1,13 +1,9 @@
 from flask_wtf import  Form
-from app.extensions import db
-from wtforms.ext.sqlalchemy.fields import QuerySelectField
-from wtforms import StringField, BooleanField, SelectField, TextAreaField, IntegerField,  SubmitField, FileField, PasswordField, RadioField
-from wtforms.validators import DataRequired, optional, Length, NumberRange, Email, EqualTo
-from wtforms.widgets import TextArea, Input
+from wtforms import StringField, BooleanField, SelectField, TextAreaField, FileField, PasswordField, RadioField
+from wtforms.validators import DataRequired, Length, Email, EqualTo
 #from flask_wtf.file import FileField, FileAllowed, FileRequired
-from app.frontend import Product, Category
-from app import constants as USER
-
+from avanti.app.frontend.models import Category
+from avanti.app import constants as USER
 
 
 class ProductForm(Form):
@@ -35,13 +31,13 @@ class ProductForm(Form):
 
         '''
         def child_print(item, choices_categories, lv=1):
-            if item.get('children'): 
+            if item.get('children'):
                 for ch in item['children']:
                     #print(lv*'---', ch['node'])
                     choices_categories.append((str(ch['node'].id), (lv*'---'+' '+ch['node'].name)))
                     child_print(ch, choices_categories, lv+1)
 
-        choices_categories = []           
+        choices_categories = []
         for item in Category.full_tree_as_list():
            #print(item['node'])
            choices_categories.append((str(item['node'].id), item['node'].name))
@@ -70,13 +66,13 @@ class CategoryForm(Form):
 
         '''
         def child_print(item, choices_categories, lv=1):
-            if item.get('children'): 
+            if item.get('children'):
                 for ch in item['children']:
                     #print(lv*'---', ch['node'])
                     choices_categories.append((str(ch['node'].id), (lv*'---'+' '+ch['node'].name)))
                     child_print(ch, choices_categories, lv+1)
 
-        choices_categories = [('', 'Нет')]           
+        choices_categories = [('', 'Нет')]
         for item in Category.full_tree_as_list():
            choices_categories.append((str(item['node'].id), item['node'].name))
            child_print(item, choices_categories)
@@ -99,7 +95,7 @@ class LoginForm(Form):
 class UserForm(Form):
     username = StringField('username',validators=[DataRequired()], render_kw={ 'placeholder': 'Имя пользователя' })
     password = PasswordField('password',validators=[DataRequired(), EqualTo('password_confirm', message = 'Пароли не совпадают' ), Length(6.20) ], render_kw={ 'placeholder': 'Пароль' } )
-    email = StringField('email', validators=[DataRequired(), Email()], render_kw={ 'placeholder': 'E-Mail' } ) 
+    email = StringField('email', validators=[DataRequired(), Email()], render_kw={ 'placeholder': 'E-Mail' } )
     password_confirm = PasswordField('repeat password', render_kw={ 'placeholder': 'Повтор пароля' })
     full_name = StringField('full_name', validators=[Length(0, 64)], render_kw={ 'placeholder': 'ФИО' })
     phone = StringField('phone', render_kw={ 'placeholder': 'Телефон' })
@@ -109,7 +105,7 @@ class UserForm(Form):
 class EditUserForm(Form):
 
     username = StringField('username',validators=[DataRequired()], render_kw={ 'placeholder': 'Имя пользователя' })
-    email = StringField('email', validators=[DataRequired(), Email()], render_kw={ 'placeholder': 'E-Mail' } ) 
+    email = StringField('email', validators=[DataRequired(), Email()], render_kw={ 'placeholder': 'E-Mail' } )
     full_name = StringField('full_name', validators=[Length(0, 64)], render_kw={ 'placeholder': 'ФИО' })
     phone = StringField('phone', render_kw={ 'placeholder': 'Телефон' })
     status = RadioField(choices=USER.STATUS.items())

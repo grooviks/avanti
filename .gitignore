@@ -9,6 +9,8 @@ lib64
 *.py[cod]
 *.pyc
 
+*.log
+
 bin/
 bin/*
 
@@ -29,31 +31,18 @@ env/
 /static/
 /static/*
 
-spares_img/*.jpeg
 
 __pycache__/
 __pycache__/*
 
 pip-selfcheck.json
 
-include/
-include/*
 
-app/static/images/spares_img/
-app/static/images/spares_img/*
+avanti/app/static/images/products/*
+avanti/app/static/images/products/
 
-db_repository
-db_repository/versions/
-db_repository/versions/* 
-
-migrations/
-migrations/*
-
-app/static/images/products/*
-app/static/images/products/
-
-app/static/images/categories/
-app/static/images/categoties/*
+avanti/app/static/images/categories/
+avanti/app/static/images/categoties/*
 
 automium_web.wsgi
 *.wsgi

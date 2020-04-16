@@ -17,14 +17,14 @@ def index():
 
 @frontend.route('/about_us')
 def about_us():
-    return render_template('about_us.html')
+	return render_template('about_us.html')
 
 @frontend.context_processor
-def categories_parent_list(): 
-    return {"cat_list":[c for c in Category.query.filter_by(parent_id=None)]}
+def categories_parent_list():
+	return {"cat_list":[c for c in Category.query.filter_by(parent_id=None)]}
 
 @frontend.route('/categories')
-def categories(): 
+def categories():
 	return render_template('categories.html')
 
 
@@ -33,16 +33,16 @@ def category(id):
 	cat=Category.query.filter_by(id=id).first()
 	roots=cat.path_to_root().all()
 	roots.reverse()
-	if cat.child: 
-		return render_template('category.html', 
-		category=cat,
-		roots=roots)
-	else: 
+	if cat.child:
+		return render_template('category.html',
+							   category=cat,
+							   roots=roots)
+	else:
 		prod=Product.query.filter_by(category_id=cat.id).all()
-		return render_template('products.html', 
-		category=cat, 
-		products=prod,
-		roots=roots)
+		return render_template('products.html',
+							   category=cat,
+							   products=prod,
+							   roots=roots)
 	#roots = Category.query.all()
 	#for root in roots:
 	#print(cat.drilldown_tree()[0])
@@ -64,8 +64,8 @@ def payment():
 @frontend.route('/product/<int:id>')
 def product(id):
 	prod=Product.query.filter_by(id=id).first()
-	return render_template('product.html', 
-		product=prod)
+	return render_template('product.html',
+						   product=prod)
 
 #@frontend.route('get_image_category')
 #def get_image_category(id):#
@@ -73,5 +73,4 @@ def product(id):
 
 @frontend.route('/robots.txt')
 def static_from_root():
-	print(current_app.static_folder)
 	return send_from_directory(current_app.static_folder, request.path[1:])

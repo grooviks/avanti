@@ -1,7 +1,7 @@
-from app.extensions import db
+from avanti.app.extensions import db
 from datetime import datetime
-from app import constants as USER
-from app.utils import encrypt
+from avanti.app import constants as USER
+from avanti.app.utils import encrypt
 
 
 class User(db.Model):
@@ -18,22 +18,22 @@ class User(db.Model):
 	birth_date = db.Column(db.DateTime, nullable=True)
 	phone = db.Column(db.String(20))
 	reg_date = db.Column(db.DateTime, default=datetime.now)
-	
+
 	# Flask-Login integration
 	def is_authenticated(self):
 		return True
-	
+
 	def is_active(self):
 		return True
-	
+
 	def is_anonymous(self):
 		return False
-	
+
 	def get_id(self):
 		return self.id
 
 	@property
-	def get_status(self): 
+	def get_status(self):
 		return USER.STATUS[str(self.status)]
 
 	@property
@@ -41,13 +41,13 @@ class User(db.Model):
 		return USER.ROLE[str(self.role)]
 
 
-		
-    # relations
+
+	# relations
     # в дальнейшем для заказов и адресов пользователей
     #orders = db.relationship('Order', back_populates='user', lazy='dynamic')
     #user_addresses = db.relationship(
     #    'UserAddress', back_populates='user', lazy='dynamic')
-    
+
 	def __init__(self, username,  full_name, email, password, phone, role = USER.USER, status = USER.ACTIVE):
 		self.username = username.strip()
 		self.full_name = full_name

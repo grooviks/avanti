@@ -1,8 +1,8 @@
-import json, os 
+import os
 import uuid
-from config import UPLOAD_FOLDER_IMG, UPLOAD_FOLDER_FILES
-from app.utils import upload_image, delete_image
-from app.extensions import db
+from avanti.config import UPLOAD_FOLDER_IMG
+from avanti.app.utils import upload_image, delete_image
+from avanti.app.extensions import db
 from sqlalchemy_mptt.mixins import BaseNestedSets
 
 
@@ -37,44 +37,41 @@ class Product(db.Model):
         self.is_avail = is_avail
         self.is_hot = is_hot
         self.is_new = is_new
-        self.category_id = category_id 
+        self.category_id = category_id
 
     def save_product_images(self, files):
         path = os.path.join(UPLOAD_FOLDER_IMG,'products')
-        for file in files: 
+        for file in files:
             name=str(uuid.uuid4())
             upload_image(path,file,name)
             db.session.add(ProductImage(name+'.jpeg', self.id))
         db.session.commit()
 
-    def save_product_base_image(self, file): 
+    def save_product_base_image(self, file):
         path = os.path.join(UPLOAD_FOLDER_IMG,'products')
         upload_image(path,file,str(self.id))
         db.session.add(ProductImage(str(self.id)+'.jpeg', self.id, basic_image=True))
         db.session.commit()
 
-    def get_base_image_url(self): 
+    def get_base_image_url(self):
         file = self.product_images.filter_by(product_id = self.id, basic_image = True ).first()
-        if file:   
+        if file:
             return 'images/products/'+file.filename
         return  'images/no-image-available.png'
 
     def delete_product_images(self, basic_image=False):
-        if basic_image: 
+        if basic_image:
             files = self.product_images.filter_by(product_id = self.id, basic_image = True ).first()
-        else: 
+        else:
             files = self.product_images.all()
         path = os.path.join(UPLOAD_FOLDER_IMG,'products')
-        for file in files : 
+        for file in files :
             if delete_image(os.path.join(path, file.filename)):
                 db.session.delete(file)
 
     #def get_gallery(self):
     #    files = self.product_images.all()
     #    print(files)
-
-
-
 
 
 class Category(db.Model, BaseNestedSets):
@@ -88,7 +85,7 @@ class Category(db.Model, BaseNestedSets):
     # relations
     products = db.relationship(
         'Product', back_populates='category', lazy='dynamic')
-    
+
     parent = db.relationship("Category", remote_side=[id], backref='child')
 
     category_image = db.relationship(
@@ -99,17 +96,17 @@ class Category(db.Model, BaseNestedSets):
         upload_image(path,file,str(self.id))
         db.session.add(CategoryImage(str(self.id)+'.jpeg'))
         db.session.commit()
-    
+
     def delete_category_image(self):
         files = self.category_image.all()
         path = os.path.join(UPLOAD_FOLDER_IMG,'categories')
-        for file in files : 
+        for file in files :
             print(file.filename)
             if delete_image(os.path.join(path, file.filename)):
                 db.session.delete(file)
 
 
-        
+
 
     @staticmethod
     def full_tree_as_list(parent_id=None):
@@ -124,10 +121,9 @@ class Category(db.Model, BaseNestedSets):
 
     def __init__(self, parent_id, name, description=None):
         if parent_id :
-            self.parent_id = int(parent_id) 
+            self.parent_id = int(parent_id)
         self.name = name.strip()
         self.description = description
-        
 
 
 
@@ -160,6 +156,6 @@ class CategoryImage(db.Model):
     # relations
     category = db.relationship("Category", back_populates="category_image")
     def __init__(self, id):
-        self.filename = id 
+        self.filename = id
         self.category_id = id
 

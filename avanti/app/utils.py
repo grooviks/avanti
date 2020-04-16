@@ -1,6 +1,6 @@
 import os
 from PIL import Image
-from config import ALLOWED_EXTENSIONS
+from avanti.config import ALLOWED_EXTENSIONS
 from werkzeug import secure_filename
 import bcrypt
 
@@ -9,13 +9,14 @@ def allowed_file(filename):
     '''проверка имени и расширения файла'''
     return '.' in filename and filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+
 def upload_image(path,file,name):
     '''загрузка изображения'''
     if allowed_file(file.filename):
         filename = secure_filename(file.filename)
         filepath = os.path.join(path,filename)
         file.save(filepath)
-        #конвертируем изображение 
+        #конвертируем изображение
         im = Image.open(filepath)
         #и сохраняем с нужным именеем
         filepath = os.path.join(path,name +'.jpeg')
@@ -24,9 +25,10 @@ def upload_image(path,file,name):
         return True
     return False
 
+
 def delete_image(path):
     ''' удаление файла '''
-    if os.path.exists(path): 
+    if os.path.exists(path):
         os.remove(path)
         return True
     return False
