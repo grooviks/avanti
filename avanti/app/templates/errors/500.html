@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div id="main_block" class="style1">
+    <h1>Произошла непредвиденная ошибка</h1>
+    <h2><p>Наши специалисты были уведомлены об этом. Извините за доставленные неудобства!</p>
+    <p><a href="{{ url_for('frontend.index') }}">На главную.</a></p></h2>
+</div>
+{% endblock %}

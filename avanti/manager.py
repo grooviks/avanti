@@ -10,6 +10,7 @@ from flask_migrate import Migrate, MigrateCommand
 from avanti.app import application
 from avanti.app.config import parse_config
 from avanti.app.extensions import db
+from avanti.app.utils import checks_directories
 
 _logger_ = logging.getLogger('default')
 
@@ -61,8 +62,9 @@ class GunicornServer(Command):
 
     def run(self, *args, **kwargs):
         config = self.config.get('gunicorn')
-
         _logger_.debug('Preparing gunicorn server')
+        checks_directories()
+
         try:
             gunicorn_app = GunicornApp(
                 flask_app=application(),

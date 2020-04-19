@@ -30,9 +30,10 @@ def categories():
 
 @frontend.route('/category/<int:id>')
 def category(id):
-	cat=Category.query.filter_by(id=id).first()
+	cat = Category.query.filter_by(id=id).first_or_404()
 	roots=cat.path_to_root().all()
 	roots.reverse()
+
 	if cat.child:
 		return render_template('category.html',
 							   category=cat,
@@ -52,9 +53,11 @@ def category(id):
 def contacts():
 	return render_template('contacts.html')
 
+
 @frontend.route('/services')
 def services():
 	return render_template('services.html')
+
 
 @frontend.route('/payment')
 def payment():
@@ -63,7 +66,7 @@ def payment():
 
 @frontend.route('/product/<int:id>')
 def product(id):
-	prod=Product.query.filter_by(id=id).first()
+	prod=Product.query.filter_by(id=id).first_or_404()
 	return render_template('product.html',
 						   product=prod)
 

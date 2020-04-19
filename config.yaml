@@ -1,12 +1,9 @@
 development: true
-db:
-  host: localhost
-  port: 3306
 gunicorn:
-  host: localhost # '[::]'
+  host: localhost
   port: 8000
   keep_job_result: True
   encryption: False
-  workers_count: 2
+  workers_count: 1
   access_log: access.log
   error_log: error.log

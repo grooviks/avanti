@@ -8,7 +8,7 @@
     <link rel="shortcut icon" href="/static/images/favicon.png" type="image/png">
     <title>Avantistyle.ru</title>
     <link href="{{ url_for('static', filename = 'css/style.css') }}" rel="stylesheet">
-    <meta content='мебель, от производителя, кухни, балашиха, детская мебель, на заказ, мебель в балашихе  ' name='keywords'/>
+    <meta content='мебель, от производителя, кухни, балашиха, детская мебель, на заказ, мебель в балашихе' name='keywords'/>
 
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-112005963-1"></script>
@@ -23,18 +23,16 @@
   </head>
   <body>
 <div class="container">
-
-  
-    <div id="header">                                                                 
+    <div id="header">
     <div id="header_inside">
-    <img src="/static/images/header.jpg" alt="setalpm" width="999" height="222" border="0" usemap="#Map" /><br />                    
+    <img src="/static/images/header.jpg" alt="setalpm" width="999" height="222" border="0" usemap="#Map" /><br />
 
     {% set navigation_bar = [
     ('/', 'index', 'Главная'),
     ('/about_us', 'about_us', 'О нас'),
     ('/contacts', 'contacts', 'Контакты'),
     ('/services', 'services', 'Услуги'),
-    ('/payment', 'payment', 'Оплата'), 
+    ('/payment', 'payment', 'Оплата'),
     ('/categories', 'categories','Каталог')
     ] -%}
       {% set active_page = active_page|default('index')-%}
@@ -49,7 +47,7 @@
     </div>
     </div>
 
-<div id="wrapper">  
+<div id="wrapper">
 
 {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
@@ -63,10 +61,10 @@
 {% endwith %}
 
 <div id="content_inside">
-{% include 'sidebar.html' %} 
+{% include 'sidebar.html' %}
 
 {% block content %}{% endblock %}
-</div>  
+</div>
   <div id="footer">
     <div id="footer_inside">
       <ul class="footer_menu">
@@ -76,7 +74,7 @@
         </li>
         {% endfor %}
       </ul><br /><br />
-                                                                                                                                                                                                                                                                                                         
+
     </div>
   </div>
 </div>

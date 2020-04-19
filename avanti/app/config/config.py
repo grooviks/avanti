@@ -34,11 +34,13 @@ def _read_file(filename):
 def update_config(config):
     upd_conf = {}
 
-    db_params = config.get('db')
+    db_params = config.get('db', {})
     if not db_params:
-        _logger_.error('DB parametrs is missing in config file!')
+        _logger_.info('DB parameters is missing in config file!')
+        db_params['host'] = os.environ.get('DB_HOST', 'localhost')
+        db_params['port'] = os.environ.get('DB_PORT', '3306')
     if any(var not in os.environ for var in ('DB_NAME', 'DB_USER', 'DB_PASS')):
-        _logger_.error('DB parametrs is missing in environment!')
+        _logger_.error('DB parameters is missing in environment!')
     else:
         db_params['db_name'] = os.environ.get('DB_NAME')
         db_params['user'] = os.environ.get('DB_USER')

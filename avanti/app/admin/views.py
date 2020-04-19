@@ -124,7 +124,7 @@ def new_product():
         )
         db.session.add(product)
         db.session.commit()
-        print(base_img_form.image.data)
+
         if base_img_form.image.data:
             product.save_product_base_image(base_img_form.image.data)
         if request.files['images'].filename:

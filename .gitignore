@@ -49,3 +49,6 @@ automium_web.wsgi
 
 Thumbs.db
 Thumbs*
+
+ssl/
+ssl/*

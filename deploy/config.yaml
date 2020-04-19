@@ -1,0 +1,9 @@
+development: false
+gunicorn:
+  host: localhost
+  port: 8000
+  keep_job_result: True
+  encryption: False
+  workers_count: 2
+  access_log: /var/log/avanti/access.log
+  error_log: /var/log/avanti/error.log

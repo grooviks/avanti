@@ -1,15 +1,19 @@
 from flask import Flask, redirect, url_for
 from flask_markdown import markdown
 from .extensions import db, login_manager
+from .errors import not_found_error, internal_error
 
 
 def application():
 	app = Flask(__name__)
 	app.config.from_object('config')
+
 	db.init_app(app)
 	db.app = app
 	markdown(app)
 	register_blueprints(app)
+	app.register_error_handler(404, not_found_error)
+	app.register_error_handler(500, internal_error)
 	# register_debug(app)
 	# register_database(app)
 	# register_jinja2_extension(app)
@@ -25,7 +29,6 @@ def register_blueprints(app):
 	# from api import api
 	for bp in [admin, frontend]:
 		app.register_blueprint(bp)
-	# app.register_blueprint(admin)
 
 
 def init_login(app):
