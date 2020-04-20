@@ -28,10 +28,10 @@ class Product(db.Model):
     def __repr__(self):
         return self.name
 
-    def __init__(self, name,  detail, is_avail, is_hot, is_new, category_id, number = None, price = '0'):
+    def __init__(self, name,  detail, is_avail, is_hot, is_new, category_id, price, number=0):
         self.name = name.strip()
         self.price = price
-        self.number = price
+        self.number = number
         self.detail = detail
         self.is_avail = is_avail
         self.is_hot = is_hot
@@ -53,18 +53,18 @@ class Product(db.Model):
         db.session.commit()
 
     def get_base_image_url(self):
-        file = self.product_images.filter_by(product_id = self.id, basic_image = True).first()
+        file = self.product_images.filter_by(product_id=self.id, basic_image=True).first()
         if file:
             return f'images/products/{file.filename}'
         return  'images/no-image-available.png'
 
     def delete_product_images(self, basic_image=False):
         if basic_image:
-            files = self.product_images.filter_by(product_id = self.id, basic_image = True ).first()
+            files = self.product_images.filter_by(product_id=self.id, basic_image=True ).first()
         else:
             files = self.product_images.all()
         path = os.path.join(UPLOAD_FOLDER_IMG,'products')
-        for file in files :
+        for file in files:
             if delete_image(os.path.join(path, file.filename)):
                 db.session.delete(file)
 
@@ -101,7 +101,7 @@ class Category(db.Model, BaseNestedSets):
 
     def delete_category_image(self):
         files = self.category_image.all()
-        path = os.path.join(UPLOAD_FOLDER_IMG,'categories')
+        path = os.path.join(UPLOAD_FOLDER_IMG, 'categories')
         for file in files:
             if delete_image(os.path.join(path, file.filename)):
                 db.session.delete(file)

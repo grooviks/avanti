@@ -27,20 +27,20 @@ def manage_products():
     products = Product.query.all()
 
     return render_template('admin/manage_products.html',
-						   products=products)
+                           products=products)
 
 
 @admin.route('/manage_categories')
 @login_required
 def manage_categories():
     return render_template('admin/manage_categories.html',
-						   category=Category.full_tree_as_list())
+                           category=Category.full_tree_as_list())
 
 
 @admin.route('/product/<id>', methods=['GET', 'POST'])
 @login_required
 def product(id):
-    product = Product.query.filter_by(id=id).first()
+    product = Product.query.filter_by(id=id).first_or_404()
     form = ProductForm(obj=product)
     base_img_form = ProductImageForm()
     images_form = ProductImagesForm()
@@ -49,7 +49,6 @@ def product(id):
         if request.form['submit'] == 'Изменить':
             product.name = form.name.data
             product.price = form.price.data
-            product.number = form.number.data
             product.category_id = form.category.data
             product.detail = form.detail.data
             product.is_avail = form.is_avail.data
@@ -72,14 +71,14 @@ def product(id):
             flash('Ошибка редактирования!!! ', 'danger')
         return redirect(url_for('admin.manage_products'))
     return render_template('admin/product.html',
-						   product=product,
-						   form=form)
+                           product=product,
+                           form=form)
 
 
 @admin.route('/category/<id>', methods=['GET', 'POST'])
 @login_required
 def category(id):
-    cat = Category.query.filter_by(id=id).first()
+    cat = Category.query.filter_by(id=id).first_or_404()
     form = CategoryForm(obj=cat)
     if form.validate_on_submit():
         if request.form['submit'] == 'Изменить':
@@ -101,8 +100,8 @@ def category(id):
         return redirect(url_for('admin.category', id=cat.id))
     # image in product.product_images.all()
     return render_template('admin/category.html',
-						   form=form,
-						   category=cat)
+                           form=form,
+                           category=cat)
 
 
 @admin.route('/new_product', methods=['GET', 'POST'])
@@ -115,7 +114,6 @@ def new_product():
         product = Product(
             name=form.name.data,
             price=form.price.data,
-            number=form.number.data,
             category_id=form.category.data,
             detail=form.detail.data,
             is_avail=form.is_avail.data,
@@ -135,9 +133,9 @@ def new_product():
     elif request.method == 'POST':
         flash('Не заполнены обязательные поля!!! ', 'warning')
     return render_template('admin/new_product.html',
-						   form=form,
-						   base_img_form=base_img_form,
-						   images_form=images_form)
+                           form=form,
+                           base_img_form=base_img_form,
+                           images_form=images_form)
 
 
 @admin.route('/new_category', methods=['GET', 'POST'])
@@ -157,7 +155,7 @@ def new_category():
     elif request.method == 'POST':
         flash('Не заполнены обязательные поля!!! ', 'warning')
     return render_template('admin/new_category.html',
-						   form=form)
+                           form=form)
 
 
 @admin.route('/login', methods=['GET', 'POST'])
@@ -177,7 +175,7 @@ def login():
         else:
             flash('Пользователь не существует!', 'warning')
     return render_template('admin/login.html',
-						   form=form)
+                           form=form)
 
 
 @admin.route('/logout')
@@ -202,14 +200,14 @@ def new_user():
         db.session.add(user)
         db.session.commit()
     return render_template('admin/new_user.html',
-						   form=form)
+                           form=form)
 
 
 @admin.route('/manage_users', methods=['GET', 'POST'])
 @login_required
 def manage_users():
     return render_template('admin/manage_users.html',
-						   users=User.query.all())
+                           users=User.query.all())
 
 
 @admin.route('/user/<int:id>', methods=['GET', 'POST'])
@@ -235,5 +233,5 @@ def user(id):
         else:
             flash('Ошибка редактирования!!! ', 'danger')
     return render_template('admin/user.html',
-						   user=user,
-						   form=form)
+                           user=user,
+                           form=form)
