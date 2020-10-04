@@ -1,13 +1,11 @@
-from flask import Blueprint, render_template, request, flash, \
-    url_for, redirect
-
+from flask import Blueprint, render_template, request, flash, url_for, redirect
 from flask_login import login_user, logout_user, login_required
 
-from avanti.app.frontend import Product, Category
-from .forms import ProductForm, CategoryForm, ProductImageForm, ProductImagesForm, LoginForm, UserForm, EditUserForm
 from avanti.app.extensions import db
-from .models import User
+from avanti.app.frontend import Product, Category
 from avanti.app.utils import decrypt
+from .forms import ProductForm, CategoryForm, ProductImageForm, ProductImagesForm, LoginForm, UserForm, EditUserForm
+from .models import User
 
 admin = Blueprint('admin', __name__, url_prefix='/admin', static_folder='static')
 
@@ -42,14 +40,16 @@ def manage_categories():
 def product(id):
     product = Product.query.filter_by(id=id).first_or_404()
     form = ProductForm(obj=product)
+    # подставляем дефолтное значение для select_field
+    form.category.process_data(product.category_id)
     base_img_form = ProductImageForm()
     images_form = ProductImagesForm()
 
-    if form.validate_on_submit():
+    if form.is_submitted():
         if request.form['submit'] == 'Изменить':
             product.name = form.name.data
             product.price = form.price.data
-            product.category_id = form.category.data
+            product.category_id = get_really_data(form.category)
             product.detail = form.detail.data
             product.is_avail = form.is_avail.data
             product.is_hot = form.is_avail.data
@@ -70,6 +70,7 @@ def product(id):
         else:
             flash('Ошибка редактирования!!! ', 'danger')
         return redirect(url_for('admin.manage_products'))
+
     return render_template('admin/product.html',
                            product=product,
                            form=form)
@@ -225,7 +226,7 @@ def user(id):
             user.role = form.role.data
             db.session.commit()
             flash('Пользователь изменен!!', 'success')
-        elif (request.form['submit'] == 'Удалить'):
+        elif request.form['submit'] == 'Удалить':
             db.session.delete(user)
             db.session.commit()
             flash('Удалено!!! ', 'success')
@@ -235,3 +236,10 @@ def user(id):
     return render_template('admin/user.html',
                            user=user,
                            form=form)
+
+# FIXME: не работает нормально default value в поле
+def get_really_data(field):
+    try:
+        return field.raw_data[0]
+    except IndexError:
+        return field.data

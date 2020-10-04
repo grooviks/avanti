@@ -1,4 +1,4 @@
-from flask_wtf import Form
+from flask_wtf import FlaskForm
 from wtforms import StringField, BooleanField, SelectField, TextAreaField, FileField, PasswordField, RadioField
 from wtforms.validators import DataRequired, Length, Email, EqualTo
 # from flask_wtf.file import FileField, FileAllowed, FileRequired
@@ -6,7 +6,7 @@ from avanti.app.frontend.models import Category
 from avanti.app import constants as USER
 
 
-class ProductForm(Form):
+class ProductForm(FlaskForm):
     name = StringField('name', validators=[DataRequired()])
     price = StringField('price')
     number = StringField('number')
@@ -47,7 +47,7 @@ class ProductForm(Form):
         self.category.choices = choices_categories
 
 
-class CategoryForm(Form):
+class CategoryForm(FlaskForm):
     name = StringField('name', validators=[DataRequired()])
     parent = SelectField('parent')
     image = FileField('image')
@@ -82,21 +82,21 @@ class CategoryForm(Form):
         self.parent.choices = choices_categories
 
 
-class ProductImageForm(Form):
+class ProductImageForm(FlaskForm):
     image = FileField('ImageFile')
 
 
-class ProductImagesForm(Form):
+class ProductImagesForm(FlaskForm):
     images = FileField('ImageFiles')
 
 
-class LoginForm(Form):
+class LoginForm(FlaskForm):
     username = StringField('username', validators=[DataRequired()])
     password = PasswordField('password', validators=[DataRequired()])
     remember_me = BooleanField('remember_me', default=False)
 
 
-class UserForm(Form):
+class UserForm(FlaskForm):
     username = StringField('username', validators=[DataRequired()], render_kw={'placeholder': 'Имя пользователя'})
     password = PasswordField('password', validators=[DataRequired(), EqualTo('password_confirm', message='Пароли не совпадают'),
                                          Length(6.20)], render_kw={'placeholder': 'Пароль'})
@@ -108,7 +108,7 @@ class UserForm(Form):
     role = RadioField(choices=USER.ROLE.items(), default='2')
 
 
-class EditUserForm(Form):
+class EditUserForm(FlaskForm):
     username = StringField('username', validators=[DataRequired()], render_kw={'placeholder': 'Имя пользователя'})
     email = StringField('email', validators=[DataRequired(), Email()], render_kw={'placeholder': 'E-Mail'})
     full_name = StringField('full_name', validators=[Length(0, 64)], render_kw={'placeholder': 'ФИО'})
