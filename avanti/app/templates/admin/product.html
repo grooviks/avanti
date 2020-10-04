@@ -8,6 +8,7 @@
         {{ form.category }}
         {{ form.price }}
         {{ form.detail( placeholder="Описание",class_="form-detail-product") }}
+          <br>
         <label class="checkbox_label">
      		{{ form.is_avail(id="checkbox_avail",class_="checkbox", value="1") }}
     		<span class="checkbox-custom"></span>
@@ -34,12 +35,12 @@
     </form>
     <div class="photo">
     	<img src="{{ url_for('static', filename=product.get_base_image_url()) }}" alt="" width="300" height="200" /><br/>
-    </div> 
+    </div>
 
     <div class="gallery">
         {%- for img in product.product_images.all() %}
         <img src="{{ url_for('static', filename='images/products/%s'%img) }}" alt="" width="150" height="150" /><br/>
-        
+
         {% endfor %}
 
     </div>

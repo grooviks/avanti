@@ -7,10 +7,10 @@ from avanti.app import constants as USER
 
 
 class ProductForm(FlaskForm):
-    name = StringField('name', validators=[DataRequired()])
-    price = StringField('price')
+    name = StringField('name', validators=[DataRequired()], render_kw={'placeholder': 'Наименование продукта)'})
+    price = StringField('price', render_kw={'placeholder': 'Цена (только число)'})
     number = StringField('number')
-    detail = TextAreaField('detail')
+    detail = TextAreaField('detail', render_kw={'placeholder': 'Описание'})
     tips = TextAreaField('tips')  # add for search speed
     is_avail = BooleanField('is_avail')
     is_hot = BooleanField('is_hot')

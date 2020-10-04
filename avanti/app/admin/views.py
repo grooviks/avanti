@@ -151,7 +151,7 @@ def new_category():
         db.session.commit()
         if form.image.data:
             category.save_category_image(form.image.data)
-        flash('Категория добавлена!!! ', 'success')
+        flash('Категория добавлена!!!', 'success')
         return redirect(url_for('admin.manage_categories'))
     elif request.method == 'POST':
         flash('Не заполнены обязательные поля!!! ', 'warning')
