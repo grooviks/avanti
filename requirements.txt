@@ -24,7 +24,7 @@ Jinja2==2.11.2
 jinja2-markdown==0.0.3
 legacy==0.1.6
 loginform==1.2.0
-lxml==4.4.2
+lxml==4.6.2
 Mako==1.0.6
 Markdown==2.6.9
 MarkupSafe==0.23
