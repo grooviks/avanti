@@ -45,7 +45,7 @@ six==1.10.0
 SQLAlchemy==1.3.12
 sqlalchemy-migrate==0.10.0
 sqlalchemy-mptt==0.2.2
-sqlparse==0.2.2
+sqlparse==0.4.4
 Tempita==0.5.2
 Werkzeug==0.15.3
 WTForms==2.3.3
