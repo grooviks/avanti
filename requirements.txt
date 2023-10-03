@@ -34,7 +34,7 @@ olefile==0.44
 openpyxl==2.4.8
 packaging==16.8
 pbr==1.10.0
-Pillow==8.1.1
+Pillow==10.0.1
 protobuf==3.11.2
 pycparser==2.18
 PyMySQL==0.7.9
