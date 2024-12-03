@@ -8,7 +8,7 @@ decorator==4.0.11
 dnspython==2.0.0
 email-validator==1.1.1
 et-xmlfile==1.0.1
-Flask==1.0
+Flask==2.3.2
 Flask-Login==0.4.1
 flask-markdown2==0.0.3
 Flask-Migrate==2.0.2
@@ -24,7 +24,7 @@ Jinja2==2.11.3
 jinja2-markdown==0.0.3
 legacy==0.1.6
 loginform==1.2.0
-lxml==4.6.2
+lxml==4.9.1
 Mako==1.0.6
 Markdown==2.6.9
 MarkupSafe==0.23
