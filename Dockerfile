@@ -6,7 +6,7 @@ RUN sed -i s/^mirrorlist=http/#mirrorlist=http/g /etc/yum.repos.d/CentOS-*.repo
 RUN yum -y install epel-release
 RUN yum -y update
 
-RUN yum -y install nginx bash vim netcat curl wget less vim net-tools iproute supervisor mariadb-devel nc gcc scp rsync mariadb python36 python36-pip python36-devel
+RUN yum -y install nginx bash vim netcat curl wget less vim net-tools iproute supervisor mariadb-devel nc gcc scp rsync mariadb python36 python36-pip python36-devel libffi-devel
 RUN yum clean all
 
 RUN pip3 install --upgrade pip

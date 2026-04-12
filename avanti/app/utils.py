@@ -4,7 +4,7 @@ import os
 
 from PIL import Image
 from avanti.config import ALLOWED_EXTENSIONS, UPLOAD_FOLDER_IMG
-from werkzeug import secure_filename
+from werkzeug.utils import secure_filename
 
 
 _logger_ = logging.getLogger('default')
