@@ -1,0 +1,1 @@
+"""Avanti backend — FastAPI API для каталога мебели."""
