@@ -7,35 +7,18 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from decimal import Decimal
 
 from sqlalchemy import (
-    DateTime,
     ForeignKey,
     Integer,
     Numeric,
     String,
     Text,
-    func,
 )
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
-from avanti.db import Base
-
-
-class TimestampMixin:
-    """created_at / updated_at, проставляются на стороне БД."""
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(), nullable=False
-    )
-    updated_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True),
-        server_default=func.now(),
-        onupdate=func.now(),
-        nullable=False,
-    )
+from avanti.db import Base, TimestampMixin
 
 
 class Category(TimestampMixin, Base):

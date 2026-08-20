@@ -1,21 +1,37 @@
 """Асинхронное подключение к БД: engine, фабрика сессий, декларативная база."""
 
 from collections.abc import AsyncIterator
+from datetime import datetime
 from functools import lru_cache
 
+from sqlalchemy import DateTime, func
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     AsyncSession,
     async_sessionmaker,
     create_async_engine,
 )
-from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 from avanti.config import get_settings
 
 
 class Base(DeclarativeBase):
     """Базовый класс для всех ORM-моделей."""
+
+
+class TimestampMixin:
+    """created_at / updated_at, проставляются на стороне БД."""
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        server_default=func.now(),
+        onupdate=func.now(),
+        nullable=False,
+    )
 
 
 @lru_cache

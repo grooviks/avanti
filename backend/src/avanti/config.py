@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     # CORS — источники фронтенда
     cors_origins: list[str] = ["http://localhost:3000"]
 
+    # JWT
+    jwt_algorithm: str = "HS256"
+    access_token_expire_minutes: int = 30
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -10,6 +10,8 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import delete
 
+from avanti.auth.models import User
+from avanti.auth.security import hash_password
 from avanti.catalog.models import Category, Product
 from avanti.db import get_engine, get_sessionmaker
 from avanti.main import app
@@ -50,6 +52,33 @@ async def seed_categories() -> AsyncIterator[dict[str, int]]:
     async with get_sessionmaker()() as session:
         await session.execute(delete(Product))
         await session.execute(delete(Category))
+        await session.commit()
+
+
+@pytest.fixture
+async def superuser() -> AsyncIterator[dict[str, str]]:
+    """Заводит тестового суперпользователя и отдаёт его креды.
+
+    Чистит только своего пользователя (по email) — рабочего админа не трогает.
+    """
+    email = "tester@avanti.app"
+    password = "test-pass-12345"
+    async with get_sessionmaker()() as session:
+        await session.execute(delete(User).where(User.email == email))
+        session.add(
+            User(
+                email=email,
+                hashed_password=hash_password(password),
+                is_active=True,
+                is_superuser=True,
+            )
+        )
+        await session.commit()
+
+    yield {"email": email, "password": password}
+
+    async with get_sessionmaker()() as session:
+        await session.execute(delete(User).where(User.email == email))
         await session.commit()
 
 

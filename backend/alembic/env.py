@@ -9,6 +9,7 @@ from alembic import context
 
 # Импорт моделей регистрирует их в Base.metadata и делает видимыми для
 # autogenerate; без него таблиц в миграции не будет. noqa — импорт «ради эффекта».
+from avanti.auth import models as auth_models  # noqa: F401
 from avanti.catalog import models  # noqa: F401
 from avanti.config import get_settings
 from avanti.db import Base
