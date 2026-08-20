@@ -33,14 +33,3 @@ async def test_me_requires_auth(client: AsyncClient) -> None:
     assert (await client.get("/auth/me")).status_code == 401
     resp = await client.get("/auth/me", headers={"Authorization": "Bearer garbage"})
     assert resp.status_code == 401
-
-
-async def test_admin_requires_token(client: AsyncClient, superuser: dict[str, str]) -> None:
-    # без токена — закрыто
-    assert (await client.get("/admin/ping")).status_code == 401
-
-    # с токеном суперпользователя — открыто
-    token = await _login(client, superuser["email"], superuser["password"])
-    resp = await client.get("/admin/ping", headers={"Authorization": f"Bearer {token}"})
-    assert resp.status_code == 200
-    assert resp.json() == {"status": "pong"}

@@ -3,15 +3,38 @@
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from loguru import logger
 
 from avanti.admin.router import router as admin_router
 from avanti.auth.router import router as auth_router
 from avanti.catalog.router import router as catalog_router
 from avanti.config import get_settings
+from avanti.core.exceptions import (
+    ConflictError,
+    DomainError,
+    DomainValidationError,
+    NotFoundError,
+)
 from avanti.logging_setup import setup_logging
+
+# Доменное исключение → HTTP-статус.
+_DOMAIN_STATUS: dict[type[DomainError], int] = {
+    NotFoundError: status.HTTP_404_NOT_FOUND,
+    ConflictError: status.HTTP_409_CONFLICT,
+    DomainValidationError: status.HTTP_400_BAD_REQUEST,
+}
+
+
+def _register_exception_handlers(app: FastAPI) -> None:
+    async def handle_domain_error(_: Request, exc: DomainError) -> JSONResponse:
+        code = _DOMAIN_STATUS.get(type(exc), status.HTTP_400_BAD_REQUEST)
+        return JSONResponse(status_code=code, content={"detail": exc.message})
+
+    for exc_type in _DOMAIN_STATUS:
+        app.add_exception_handler(exc_type, handle_domain_error)
 
 
 @asynccontextmanager
@@ -35,6 +58,8 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    _register_exception_handlers(app)
 
     @app.get("/health", tags=["system"])
     def health() -> dict[str, str]:

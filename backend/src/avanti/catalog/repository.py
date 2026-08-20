@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from sqlalchemy import select
+from typing import Any
+
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -50,3 +52,37 @@ class CatalogRepository:
             .options(selectinload(Product.images))
         )
         return await self._session.scalar(stmt)
+
+    async def get_by_slug(self, slug: str) -> Category | None:
+        return await self._session.scalar(select(Category).where(Category.slug == slug))
+
+    async def count_children(self, category_id: int) -> int:
+        stmt = select(func.count()).select_from(Category).where(
+            Category.parent_id == category_id
+        )
+        return await self._session.scalar(stmt) or 0
+
+    async def count_products(self, category_id: int) -> int:
+        stmt = select(func.count()).select_from(Product).where(
+            Product.category_id == category_id
+        )
+        return await self._session.scalar(stmt) or 0
+
+    async def create_category(self, **fields: Any) -> Category:
+        category = Category(**fields)
+        self._session.add(category)
+        await self._session.commit()
+        # Явно грузим images ([]), иначе pydantic полезет в ленивый relationship.
+        await self._session.refresh(category, attribute_names=["images"])
+        return category
+
+    async def update_category(self, category: Category, **fields: Any) -> Category:
+        for name, value in fields.items():
+            setattr(category, name, value)
+        await self._session.commit()
+        await self._session.refresh(category, attribute_names=["images"])
+        return category
+
+    async def delete_category(self, category: Category) -> None:
+        await self._session.delete(category)
+        await self._session.commit()
