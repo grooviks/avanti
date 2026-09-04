@@ -1,6 +1,7 @@
 """Конфигурация приложения. Всё берётся из окружения — секретов в коде нет."""
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -30,6 +31,14 @@ class Settings(BaseSettings):
     # JWT
     jwt_algorithm: str = "HS256"
     access_token_expire_minutes: int = 30
+
+    # Медиа: пока локальная ФС. В будущем реализацию Storage можно заменить на S3/MinIO.
+    media_root: Path = Path("media")
+    media_url_prefix: str = "/media"
+    media_max_upload_bytes: int = 10 * 1024 * 1024
+
+    # Одноразовый перенос данных из старого Flask/MySQL.
+    legacy_database_url: str | None = None
 
 
 @lru_cache

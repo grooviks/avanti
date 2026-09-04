@@ -6,6 +6,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.staticfiles import StaticFiles
 from loguru import logger
 
 from avanti.admin.router import router as admin_router
@@ -19,6 +20,7 @@ from avanti.core.exceptions import (
     NotFoundError,
 )
 from avanti.logging_setup import setup_logging
+from avanti.media.storage import LocalStorage
 
 # Доменное исключение → HTTP-статус.
 _DOMAIN_STATUS: dict[type[DomainError], int] = {
@@ -50,6 +52,9 @@ def create_app() -> FastAPI:
     setup_logging(settings.debug)
 
     app = FastAPI(title=settings.app_name, version="0.1.0", lifespan=lifespan)
+    app.state.media_storage = LocalStorage(
+        settings.media_root, settings.media_url_prefix, settings.media_max_upload_bytes
+    )
 
     app.add_middleware(
         CORSMiddleware,
@@ -68,6 +73,11 @@ def create_app() -> FastAPI:
     app.include_router(catalog_router)
     app.include_router(auth_router)
     app.include_router(admin_router)
+    app.mount(
+        settings.media_url_prefix,
+        StaticFiles(directory=settings.media_root),
+        name="media",
+    )
 
     logger.debug("Application assembled, routers connected")
     return app

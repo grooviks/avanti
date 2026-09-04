@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from avanti.catalog.models import Category, Product
+from avanti.catalog.models import Category, Product, ProductImage
 
 
 class CatalogRepository:
@@ -53,8 +53,14 @@ class CatalogRepository:
         )
         return await self._session.scalar(stmt)
 
-    async def get_by_slug(self, slug: str) -> Category | None:
+    async def get_category_by_slug(self, slug: str) -> Category | None:
         return await self._session.scalar(select(Category).where(Category.slug == slug))
+
+    async def get_product_by_slug(self, slug: str) -> Product | None:
+        return await self._session.scalar(select(Product).where(Product.slug == slug))
+
+    async def get_product_by_sku(self, sku: str) -> Product | None:
+        return await self._session.scalar(select(Product).where(Product.sku == sku))
 
     async def count_children(self, category_id: int) -> int:
         stmt = select(func.count()).select_from(Category).where(
@@ -85,4 +91,27 @@ class CatalogRepository:
 
     async def delete_category(self, category: Category) -> None:
         await self._session.delete(category)
+        await self._session.commit()
+
+    async def create_product(self, **fields: Any) -> Product:
+        images = fields.pop("images", [])
+        product = Product(**fields)
+        product.images = [ProductImage(**image) for image in images]
+        self._session.add(product)
+        await self._session.commit()
+        await self._session.refresh(product, attribute_names=["images"])
+        return product
+
+    async def update_product(self, product: Product, **fields: Any) -> Product:
+        images = fields.pop("images", None)
+        for name, value in fields.items():
+            setattr(product, name, value)
+        if images is not None:
+            product.images[:] = [ProductImage(**image) for image in images]
+        await self._session.commit()
+        await self._session.refresh(product, attribute_names=["images"])
+        return product
+
+    async def delete_product(self, product: Product) -> None:
+        await self._session.delete(product)
         await self._session.commit()

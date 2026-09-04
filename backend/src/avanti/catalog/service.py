@@ -10,7 +10,9 @@ from avanti.catalog.schemas import (
     CategoryTreeOut,
     CategoryUpdate,
     ImageOut,
+    ProductCreate,
     ProductOut,
+    ProductUpdate,
 )
 from avanti.core.exceptions import (
     ConflictError,
@@ -79,7 +81,7 @@ class CatalogService:
     # --- write (admin) ---
 
     async def create_category(self, data: CategoryCreate) -> CategoryOut:
-        if await self._repo.get_by_slug(data.slug) is not None:
+        if await self._repo.get_category_by_slug(data.slug) is not None:
             raise ConflictError(f"Категория со slug «{data.slug}» уже существует")
         if data.parent_id is not None and await self._repo.get_category(data.parent_id) is None:
             raise DomainValidationError(f"Родительская категория {data.parent_id} не найдена")
@@ -102,7 +104,7 @@ class CatalogService:
 
         new_slug = fields.get("slug")
         if new_slug is not None and new_slug != category.slug:
-            existing = await self._repo.get_by_slug(new_slug)
+            existing = await self._repo.get_category_by_slug(new_slug)
             if existing is not None and existing.id != category_id:
                 raise ConflictError(f"Категория со slug «{new_slug}» уже существует")
 
@@ -142,3 +144,57 @@ class CatalogService:
                     "Нельзя переместить категорию внутрь её же поддерева"
                 )
             node = parent_of.get(node)
+
+    async def create_product(self, data: ProductCreate) -> ProductOut:
+        await self._ensure_product_fields_are_available(data.slug, data.sku)
+        await self._ensure_category_exists(data.category_id)
+        product = await self._repo.create_product(
+            category_id=data.category_id,
+            name=data.name,
+            slug=data.slug,
+            description=data.description,
+            price=data.price,
+            sku=data.sku,
+            in_stock=data.in_stock,
+            images=[image.model_dump() for image in data.images],
+        )
+        return ProductOut.model_validate(product)
+
+    async def update_product(self, product_id: int, data: ProductUpdate) -> ProductOut:
+        product = await self._repo.get_product(product_id)
+        if product is None:
+            raise NotFoundError(f"Товар {product_id} не найден")
+
+        fields = data.model_dump(exclude_unset=True)
+        if "category_id" in fields:
+            await self._ensure_category_exists(fields["category_id"])
+
+        new_slug = fields.get("slug")
+        new_sku = fields.get("sku")
+        await self._ensure_product_fields_are_available(
+            new_slug, new_sku, exclude_product_id=product_id
+        )
+        updated = await self._repo.update_product(product, **fields)
+        return ProductOut.model_validate(updated)
+
+    async def delete_product(self, product_id: int) -> None:
+        product = await self._repo.get_product(product_id)
+        if product is None:
+            raise NotFoundError(f"Товар {product_id} не найден")
+        await self._repo.delete_product(product)
+
+    async def _ensure_category_exists(self, category_id: int) -> None:
+        if await self._repo.get_category(category_id) is None:
+            raise DomainValidationError(f"Категория {category_id} не найдена")
+
+    async def _ensure_product_fields_are_available(
+        self, slug: str | None, sku: str | None, *, exclude_product_id: int | None = None
+    ) -> None:
+        if slug is not None:
+            existing = await self._repo.get_product_by_slug(slug)
+            if existing is not None and existing.id != exclude_product_id:
+                raise ConflictError(f"Товар со slug «{slug}» уже существует")
+        if sku is not None:
+            existing = await self._repo.get_product_by_sku(sku)
+            if existing is not None and existing.id != exclude_product_id:
+                raise ConflictError(f"Товар с SKU «{sku}» уже существует")
