@@ -1,0 +1,42 @@
+services:
+  api:
+    image: ${AVANTI_API_IMAGE:?Set AVANTI_API_IMAGE}:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      AVANTI_DEBUG: "false"
+      AVANTI_CORS_ORIGINS: "[]"
+      AVANTI_MEDIA_ROOT: /var/lib/avanti/media
+      AVANTI_MEDIA_URL_PREFIX: /media
+    secrets:
+      - database_url
+      - secret_key
+    volumes:
+      - avanti_media:/var/lib/avanti/media
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
+      interval: 10s
+      timeout: 3s
+      retries: 6
+      start_period: 10s
+
+  web:
+    image: ${AVANTI_WEB_IMAGE:?Set AVANTI_WEB_IMAGE}:${IMAGE_TAG:?Set IMAGE_TAG}
+    restart: unless-stopped
+    environment:
+      AVANTI_API_URL: http://api:8000
+    depends_on:
+      api:
+        condition: service_healthy
+    ports:
+      - "${AVANTI_WEB_PORT:-3001}:3000"
+
+secrets:
+  database_url:
+    file: ${SECRETS_DIR:?Set SECRETS_DIR}/database_url
+  secret_key:
+    file: ${SECRETS_DIR:?Set SECRETS_DIR}/secret_key
+
+volumes:
+  avanti_media:

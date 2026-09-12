@@ -1,0 +1,22 @@
+FROM python:3.14-slim AS runtime
+
+WORKDIR /app
+
+COPY --from=ghcr.io/astral-sh/uv:0.12.3 /uv /uvx /bin/
+ENV UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    PATH="/app/.venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1
+
+COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+
+COPY backend/ ./
+RUN uv sync --frozen --no-dev
+
+COPY deploy/api-entrypoint.sh /usr/local/bin/avanti-api-entrypoint
+RUN chmod +x /usr/local/bin/avanti-api-entrypoint
+
+EXPOSE 8000
+ENTRYPOINT ["/usr/local/bin/avanti-api-entrypoint"]
+CMD ["uvicorn", "avanti.main:app", "--host", "0.0.0.0", "--port", "8000"]

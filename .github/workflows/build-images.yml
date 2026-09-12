@@ -1,0 +1,95 @@
+name: Test and publish Avanti images
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: cr.yandex
+  API_IMAGE: cr.yandex/${{ vars.YC_REGISTRY_ID }}/avanti-api
+  WEB_IMAGE: cr.yandex/${{ vars.YC_REGISTRY_ID }}/avanti-web
+
+jobs:
+  backend:
+    name: Backend checks
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_DB: avanti_test
+          POSTGRES_USER: avanti
+          POSTGRES_PASSWORD: avanti_test_password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U avanti -d avanti_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      AVANTI_DATABASE_URL: postgresql+asyncpg://avanti:avanti_test_password@localhost:5432/avanti_test
+      AVANTI_SECRET_KEY: ci-only-secret-key-not-for-production
+      AVANTI_MEDIA_ROOT: /tmp/avanti-media
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.14"
+      - run: uv sync --frozen
+        working-directory: backend
+      - run: uv run ruff check .
+        working-directory: backend
+      - run: uv run alembic upgrade head
+        working-directory: backend
+      - run: uv run pytest
+        working-directory: backend
+
+  frontend:
+    name: Frontend build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+        working-directory: frontend
+      - run: npm run build
+        working-directory: frontend
+
+  publish:
+    name: Publish images
+    if: github.event_name != 'pull_request'
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: json_key
+          password: ${{ secrets.YC_REGISTRY_JSON_KEY }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile.api
+          push: true
+          tags: |
+            ${{ env.API_IMAGE }}:${{ github.sha }}
+            ${{ env.API_IMAGE }}:latest
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/Dockerfile.web
+          push: true
+          tags: |
+            ${{ env.WEB_IMAGE }}:${{ github.sha }}
+            ${{ env.WEB_IMAGE }}:latest

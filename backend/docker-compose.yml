@@ -1,0 +1,23 @@
+# Локальная инфраструктура для разработки бэкенда.
+# Продовый compose (api + web + nginx) появится в корне репозитория позже.
+services:
+  postgres:
+    image: postgres:17
+    container_name: avanti-postgres
+    environment:
+      POSTGRES_USER: avanti
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: avanti
+    ports:
+      # 5433 на хосте — 5432 обычно занят локальным brew-postgres.
+      - "5433:5432"
+    volumes:
+      - avanti_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U avanti -d avanti"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  avanti_pgdata:
