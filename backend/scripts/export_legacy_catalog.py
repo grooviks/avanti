@@ -6,18 +6,27 @@ CLI. Результат: архивный ``legacy-mysql.sql.gz``, ``catalog.jso
 с неизменными именами ``<prefix>/{categories,products}/<legacy filename>``.
 """
 
+# /// script
+# requires-python = ">=3.9"
+# dependencies = [
+#   "pymysql>=1.1.2",
+#   "sqlalchemy>=2.0.52",
+# ]
+# ///
+
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
-from migrate_legacy_catalog import load_legacy_rows, validate_image_source
+from sqlalchemy import MetaData, Table, create_engine, select
 
-from avanti.config import get_settings
+LEGACY_TABLES = ("categories", "products", "category_images", "product_images")
 
 
 def parse_args() -> argparse.Namespace:
@@ -29,6 +38,37 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--s3-endpoint-url", required=True, help="S3 endpoint YC")
     parser.add_argument("--upload", action="store_true", help="фактически загрузить в S3")
     return parser.parse_args()
+
+
+def load_legacy_rows(database_url: str) -> dict[str, list[Mapping[str, Any]]]:
+    """Read legacy tables through synchronous SQLAlchemy; no API dependencies needed."""
+    engine = create_engine(database_url)
+    try:
+        metadata = MetaData()
+        tables = {name: Table(name, metadata, autoload_with=engine) for name in LEGACY_TABLES}
+        with engine.connect() as connection:
+            return {
+                name: [
+                    dict(row)
+                    for row in connection.execute(select(table).order_by(table.c.id)).mappings()
+                ]
+                for name, table in tables.items()
+            }
+    finally:
+        engine.dispose()
+
+
+def validate_image_source(
+    rows: dict[str, list[Mapping[str, Any]]], images_root: Path
+) -> list[Path]:
+    missing: list[Path] = []
+    for table_name, scope in (("category_images", "categories"), ("product_images", "products")):
+        for row in rows[table_name]:
+            filename = row.get("filename")
+            path = images_root / scope / str(filename)
+            if not filename or not path.is_file():
+                missing.append(path)
+    return missing
 
 
 def write_snapshot(output_dir: Path, rows: dict[str, list[dict[str, Any]]], prefix: str) -> Path:
@@ -70,10 +110,10 @@ def upload_images(images_root: Path, bucket: str, prefix: str, endpoint_url: str
 
 def main() -> None:
     args = parse_args()
-    settings = get_settings()
-    if not settings.legacy_database_url:
+    database_url = os.environ.get("AVANTI_LEGACY_DATABASE_URL")
+    if not database_url:
         raise SystemExit("Задайте AVANTI_LEGACY_DATABASE_URL в окружении старой ВМ")
-    rows = load_legacy_rows(settings.legacy_database_url)
+    rows = load_legacy_rows(database_url)
     missing = validate_image_source(rows, args.images_root)
     image_count = len(rows["category_images"]) + len(rows["product_images"])
     if missing:

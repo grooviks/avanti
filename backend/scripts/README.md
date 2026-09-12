@@ -18,7 +18,10 @@ export EXPORT_DIR=/var/backups/avanti-2026-09-12
 ./scripts/export_legacy_mysql.sh
 
 export AVANTI_LEGACY_DATABASE_URL='mysql+pymysql://…'
-python scripts/export_legacy_catalog.py \
+# Экспортёр автономный: на старой CentOS не нужно выполнять `uv sync` всего
+# backend (он попытался бы собрать greenlet). uv скачает Python 3.12 и только
+# два необходимых чистых Python-пакета из метаданных скрипта.
+uv run --no-project --python 3.12 scripts/export_legacy_catalog.py \
   --images-root /path/to/avanti/app/static/images \
   --output-dir "$EXPORT_DIR" \
   --s3-bucket avanti-media \
@@ -27,7 +30,7 @@ python scripts/export_legacy_catalog.py \
 ```
 
 Последняя команда — dry-run: проверяет все записи БД и наличие каждого
-связанного файла. Если всё в порядке, повторите её с `--upload`. Не меняйте
+связанного файла. Если всё в порядке, повторите ту же команду с `--upload`. Не меняйте
 префикс между экспортом и импортом: имена файлов и порядок фотографий сохранятся.
 
 Скопируйте на новую ВМ как минимум `catalog.json` и SQL-архив. Перед переносом
