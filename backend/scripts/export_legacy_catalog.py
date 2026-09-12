@@ -10,7 +10,6 @@ CLI. Результат: архивный ``legacy-mysql.sql.gz``, ``catalog.jso
 # requires-python = ">=3.9"
 # dependencies = [
 #   "pymysql>=1.1.2",
-#   "sqlalchemy>=2.0.52",
 # ]
 # ///
 
@@ -23,8 +22,9 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Mapping
+from urllib.parse import parse_qs, unquote, urlsplit
 
-from sqlalchemy import MetaData, Table, create_engine, select
+import pymysql
 
 LEGACY_TABLES = ("categories", "products", "category_images", "product_images")
 
@@ -41,21 +41,31 @@ def parse_args() -> argparse.Namespace:
 
 
 def load_legacy_rows(database_url: str) -> dict[str, list[Mapping[str, Any]]]:
-    """Read legacy tables through synchronous SQLAlchemy; no API dependencies needed."""
-    engine = create_engine(database_url)
+    """Read legacy MySQL directly, without SQLAlchemy/greenlet dependencies."""
+    parsed = urlsplit(database_url)
+    if parsed.scheme not in {"mysql", "mysql+pymysql"}:
+        raise SystemExit("AVANTI_LEGACY_DATABASE_URL должен начинаться с mysql+pymysql://")
+    if not parsed.hostname or not parsed.username or not parsed.path.strip("/"):
+        raise SystemExit("В AVANTI_LEGACY_DATABASE_URL укажите хост, пользователя и имя базы")
+    query = parse_qs(parsed.query)
+    connection = pymysql.connect(
+        host=parsed.hostname,
+        port=parsed.port or 3306,
+        user=unquote(parsed.username),
+        password=unquote(parsed.password or ""),
+        database=unquote(parsed.path.lstrip("/")),
+        charset=query.get("charset", ["utf8mb4"])[0],
+        cursorclass=pymysql.cursors.DictCursor,
+    )
     try:
-        metadata = MetaData()
-        tables = {name: Table(name, metadata, autoload_with=engine) for name in LEGACY_TABLES}
-        with engine.connect() as connection:
-            return {
-                name: [
-                    dict(row)
-                    for row in connection.execute(select(table).order_by(table.c.id)).mappings()
-                ]
-                for name, table in tables.items()
-            }
+        with connection.cursor() as cursor:
+            result: dict[str, list[Mapping[str, Any]]] = {}
+            for table_name in LEGACY_TABLES:
+                cursor.execute(f"SELECT * FROM `{table_name}` ORDER BY `id`")
+                result[table_name] = list(cursor.fetchall())
+            return result
     finally:
-        engine.dispose()
+        connection.close()
 
 
 def validate_image_source(
