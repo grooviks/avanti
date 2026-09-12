@@ -37,6 +37,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--s3-prefix", required=True, help="например avanti-legacy/2026-09-12")
     parser.add_argument("--s3-endpoint-url", required=True, help="S3 endpoint YC")
     parser.add_argument("--upload", action="store_true", help="фактически загрузить в S3")
+    parser.add_argument(
+        "--skip-missing-images",
+        action="store_true",
+        help="исключить из снимка ссылки на отсутствующие файлы вместо отмены экспорта",
+    )
     return parser.parse_args()
 
 
@@ -79,6 +84,23 @@ def validate_image_source(
             if not filename or not path.is_file():
                 missing.append(path)
     return missing
+
+
+def drop_missing_image_rows(
+    rows: dict[str, list[Mapping[str, Any]]], images_root: Path
+) -> int:
+    """Remove stale DB image references, preserving their products/categories."""
+    skipped = 0
+    for table_name, scope in (("category_images", "categories"), ("product_images", "products")):
+        kept: list[Mapping[str, Any]] = []
+        for row in rows[table_name]:
+            filename = row.get("filename")
+            if filename and (images_root / scope / str(filename)).is_file():
+                kept.append(row)
+            else:
+                skipped += 1
+        rows[table_name] = kept
+    return skipped
 
 
 def write_snapshot(output_dir: Path, rows: dict[str, list[dict[str, Any]]], prefix: str) -> Path:
@@ -127,12 +149,17 @@ def main() -> None:
     missing = validate_image_source(rows, args.images_root)
     image_count = len(rows["category_images"]) + len(rows["product_images"])
     if missing:
-        preview = "\n".join(f"  - {path}" for path in missing[:20])
-        remainder = "" if len(missing) <= 20 else f"\n  … ещё {len(missing) - 20}"
-        raise SystemExit(
-            f"Не найдены {len(missing)} из {image_count} файлов; экспорт отменён:\n"
-            f"{preview}{remainder}"
-        )
+        if args.skip_missing_images:
+            skipped = drop_missing_image_rows(rows, args.images_root)
+            print(f"Skipped {skipped} stale image reference(s).")
+        else:
+            preview = "\n".join(f"  - {path}" for path in missing[:20])
+            remainder = "" if len(missing) <= 20 else f"\n  … ещё {len(missing) - 20}"
+            raise SystemExit(
+                f"Не найдены {len(missing)} из {image_count} файлов; экспорт отменён:\n"
+                f"{preview}{remainder}\n"
+                "Повторите с --skip-missing-images, чтобы перенести товары без этих фото."
+            )
     snapshot = write_snapshot(args.output_dir, rows, args.s3_prefix)
     print(f"Snapshot: {snapshot}")
     print(f"Catalog: {len(rows['categories'])} categories, {len(rows['products'])} products")
