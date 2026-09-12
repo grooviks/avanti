@@ -2,9 +2,9 @@ name: Test and publish Avanti images
 
 on:
   pull_request:
-    branches: [main]
+    branches: [master]
   push:
-    branches: [main]
+    branches: [master]
   workflow_dispatch:
 
 env:

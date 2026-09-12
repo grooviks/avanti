@@ -3,6 +3,10 @@
 
 lib/
 lib/*
+# Frontend imports its API client from this directory; it is source code, not
+# the legacy Python virtual-environment directory ignored above.
+!frontend/src/lib/
+!frontend/src/lib/*
 
 lib64
 
