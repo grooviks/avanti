@@ -8,7 +8,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from avanti.catalog.models import Category, Product, ProductImage
+from avanti.catalog.models import Category, CategoryImage, Product, ProductImage
 
 
 class CatalogRepository:
@@ -75,7 +75,9 @@ class CatalogRepository:
         return await self._session.scalar(stmt) or 0
 
     async def create_category(self, **fields: Any) -> Category:
+        images = fields.pop("images", [])
         category = Category(**fields)
+        category.images = [CategoryImage(**image) for image in images]
         self._session.add(category)
         await self._session.commit()
         # Явно грузим images ([]), иначе pydantic полезет в ленивый relationship.
@@ -83,8 +85,11 @@ class CatalogRepository:
         return category
 
     async def update_category(self, category: Category, **fields: Any) -> Category:
+        images = fields.pop("images", None)
         for name, value in fields.items():
             setattr(category, name, value)
+        if images is not None:
+            category.images[:] = [CategoryImage(**image) for image in images]
         await self._session.commit()
         await self._session.refresh(category, attribute_names=["images"])
         return category

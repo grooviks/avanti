@@ -22,15 +22,32 @@ async def test_create_category(
     headers = await _auth(client, superuser)
     resp = await client.post(
         "/admin/categories",
-        json={"name": "Кухни", "slug": "kitchens", "position": 3},
+        json={
+            "name": "Кухни",
+            "slug": "kitchens",
+            "position": 3,
+            "images": [{"url": "/media/categories/kitchens.jpg", "alt": "Кухня"}],
+        },
         headers=headers,
     )
     assert resp.status_code == 201
     assert resp.json()["slug"] == "kitchens"
+    assert resp.json()["images"][0]["url"] == "/media/categories/kitchens.jpg"
 
     # появилась в дереве
     tree = (await client.get("/catalog/categories")).json()
     assert any(c["slug"] == "kitchens" for c in tree)
+
+    created = next(c for c in tree if c["slug"] == "kitchens")
+    updated = await client.patch(
+        f"/admin/categories/{created['id']}",
+        json={"images": [{"url": "/media/categories/new-kitchens.jpg"}]},
+        headers=headers,
+    )
+    assert updated.status_code == 200
+    assert [image["url"] for image in updated.json()["images"]] == [
+        "/media/categories/new-kitchens.jpg"
+    ]
 
 
 async def test_create_duplicate_slug(

@@ -1,0 +1,65 @@
+.brand-name span {
+  color: #fff7e9;
+}
+
+.footer-brand strong span {
+  color: #e3f478;
+}
+
+.brand {
+  border-radius: 28px;
+  transform: none;
+}
+
+.brand::after {
+  border-radius: 20px;
+}
+
+.hero {
+  border-radius: 54px;
+}
+
+footer {
+  background: linear-gradient(112deg, #405c00 0%, #709a07 57%, #8ab213 100%);
+}
+
+footer::after {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 15% 18%, rgba(255, 255, 255, 0.22) 0 2px, transparent 3px),
+    radial-gradient(circle at 52% 75%, rgba(36, 72, 0, 0.18) 0 2px, transparent 3px);
+  background-size: 28px 28px, 47px 47px;
+  content: "";
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+footer > * {
+  position: relative;
+  z-index: 1;
+}
+
+.header::after {
+  background:
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 0 0 / 1px 104px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.10), rgba(111, 145, 16, 0.10)) 36px 0 / 1px 78px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 72px 0 / 1px 118px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.09), rgba(111, 145, 16, 0.09)) 108px 0 / 1px 66px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 144px 0 / 1px 97px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.10), rgba(111, 145, 16, 0.10)) 180px 0 / 1px 83px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 216px 0 / 1px 112px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.09), rgba(111, 145, 16, 0.09)) 252px 0 / 1px 70px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 288px 0 / 1px 93px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.10), rgba(111, 145, 16, 0.10)) 324px 0 / 1px 116px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 360px 0 / 1px 79px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.09), rgba(111, 145, 16, 0.09)) 396px 0 / 1px 102px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 432px 0 / 1px 68px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.10), rgba(111, 145, 16, 0.10)) 468px 0 / 1px 109px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 504px 0 / 1px 86px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.09), rgba(111, 145, 16, 0.09)) 540px 0 / 1px 120px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 576px 0 / 1px 76px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.10), rgba(111, 145, 16, 0.10)) 612px 0 / 1px 98px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.13), rgba(111, 145, 16, 0.13)) 648px 0 / 1px 65px no-repeat,
+    linear-gradient(rgba(111, 145, 16, 0.09), rgba(111, 145, 16, 0.09)) 684px 0 / 1px 110px no-repeat;
+}

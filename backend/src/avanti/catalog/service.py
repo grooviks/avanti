@@ -92,6 +92,7 @@ class CatalogService:
             description=data.description,
             position=data.position,
             parent_id=data.parent_id,
+            images=[image.model_dump() for image in data.images],
         )
         return CategoryOut.model_validate(category)
 

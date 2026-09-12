@@ -54,6 +54,14 @@ class CategoryTreeOut(CategoryOut):
     children: list[CategoryTreeOut] = []
 
 
+class ImageCreate(BaseModel):
+    """Описание уже загруженного изображения."""
+
+    url: str = Field(min_length=1, max_length=1024)
+    alt: str | None = Field(default=None, max_length=255)
+    position: int = 0
+
+
 class CategoryCreate(BaseModel):
     """Входные данные для создания категории (admin)."""
 
@@ -62,6 +70,7 @@ class CategoryCreate(BaseModel):
     description: str | None = None
     position: int = 0
     parent_id: int | None = None
+    images: list[ImageCreate] = Field(default_factory=list)
 
 
 class CategoryUpdate(BaseModel):
@@ -72,18 +81,7 @@ class CategoryUpdate(BaseModel):
     description: str | None = None
     position: int | None = None
     parent_id: int | None = None
-
-
-class ImageCreate(BaseModel):
-    """Описание уже загруженного изображения.
-
-    Загрузка файлов появится вместе с модулем media; каталог пока хранит
-    только URL, поэтому доменный слой не зависит от конкретного storage.
-    """
-
-    url: str = Field(min_length=1, max_length=1024)
-    alt: str | None = Field(default=None, max_length=255)
-    position: int = 0
+    images: list[ImageCreate] | None = None
 
 
 class ProductCreate(BaseModel):
