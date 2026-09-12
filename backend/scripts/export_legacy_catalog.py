@@ -127,7 +127,12 @@ def main() -> None:
     missing = validate_image_source(rows, args.images_root)
     image_count = len(rows["category_images"]) + len(rows["product_images"])
     if missing:
-        raise SystemExit(f"Не найдены {len(missing)} из {image_count} файлов; экспорт отменён")
+        preview = "\n".join(f"  - {path}" for path in missing[:20])
+        remainder = "" if len(missing) <= 20 else f"\n  … ещё {len(missing) - 20}"
+        raise SystemExit(
+            f"Не найдены {len(missing)} из {image_count} файлов; экспорт отменён:\n"
+            f"{preview}{remainder}"
+        )
     snapshot = write_snapshot(args.output_dir, rows, args.s3_prefix)
     print(f"Snapshot: {snapshot}")
     print(f"Catalog: {len(rows['categories'])} categories, {len(rows['products'])} products")
