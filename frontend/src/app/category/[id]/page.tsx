@@ -10,6 +10,7 @@ import {
   getCategoryProducts,
   mediaUrl,
 } from "@/lib/api";
+import { categoryCover } from "@/lib/category-cover";
 
 export const revalidate = 60;
 
@@ -46,19 +47,22 @@ export default async function CategoryPage({ params }: PageProps) {
             <p className="eyebrow">Выберите раздел</p>
             <h2>Подкатегории</h2>
             <div className="category-grid">
-              {children.map((child) => (
-                <Link className="category-card" href={`/category/${child.id}`} key={child.id}>
-                  {child.images[0] ? (
-                    <img alt={child.images[0].alt ?? child.name} src={mediaUrl(child.images[0].url)} />
-                  ) : (
-                    <div className="image-placeholder" aria-hidden="true" />
-                  )}
-                  <div>
-                    <h2>{child.name}</h2>
-                    <p>{child.description ?? `${child.children.length} разделов`}</p>
-                  </div>
-                </Link>
-              ))}
+              {children.map((child) => {
+                const cover = categoryCover(child);
+                return (
+                  <Link className="category-card" href={`/category/${child.id}`} key={child.id}>
+                    {cover ? (
+                      <img alt={cover.alt} src={cover.src} />
+                    ) : (
+                      <div className="image-placeholder" aria-hidden="true" />
+                    )}
+                    <div>
+                      <h2>{child.name}</h2>
+                      <p>{child.description ?? `${child.children.length} разделов`}</p>
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
         )}
