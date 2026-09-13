@@ -26,11 +26,13 @@ services:
     restart: unless-stopped
     environment:
       AVANTI_API_URL: http://api:8000
+      AVANTI_SITE_URL: ${AVANTI_SITE_URL:-https://avantistyle.ru}
     depends_on:
       api:
         condition: service_healthy
     ports:
-      - "${AVANTI_WEB_PORT:-3001}:3000"
+      # Nginx on the same VM is the only public entry point.
+      - "${AVANTI_WEB_BIND_ADDRESS:-127.0.0.1}:${AVANTI_WEB_PORT:-3001}:3000"
 
 secrets:
   database_url:
