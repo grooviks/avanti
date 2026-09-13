@@ -2,7 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
-import { ApiError, getCategory, getCategoryProducts, mediaUrl } from "@/lib/api";
+import {
+  ApiError,
+  type CategoryTree,
+  getCategories,
+  getCategory,
+  getCategoryProducts,
+  mediaUrl,
+} from "@/lib/api";
 
 export const revalidate = 60;
 
@@ -20,7 +27,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export default async function CategoryPage({ params }: PageProps) {
   const { id } = await params;
   try {
-    const [category, products] = await Promise.all([getCategory(id), getCategoryProducts(id)]);
+    const [category, products, categoryTree] = await Promise.all([
+      getCategory(id),
+      getCategoryProducts(id),
+      getCategories(),
+    ]);
+    const children = findCategory(categoryTree, Number(id))?.children ?? [];
     return (
       <div className="page-shell">
         <Link className="back-link" href="/">← Все категории</Link>
@@ -29,6 +41,27 @@ export default async function CategoryPage({ params }: PageProps) {
           <h1>{category.name}</h1>
           {category.description && <p>{category.description}</p>}
         </section>
+        {children.length > 0 && (
+          <section className="subcategories" aria-label={`Разделы категории ${category.name}`}>
+            <p className="eyebrow">Выберите раздел</p>
+            <h2>Подкатегории</h2>
+            <div className="category-grid">
+              {children.map((child) => (
+                <Link className="category-card" href={`/category/${child.id}`} key={child.id}>
+                  {child.images[0] ? (
+                    <img alt={child.images[0].alt ?? child.name} src={mediaUrl(child.images[0].url)} />
+                  ) : (
+                    <div className="image-placeholder" aria-hidden="true" />
+                  )}
+                  <div>
+                    <h2>{child.name}</h2>
+                    <p>{child.description ?? `${child.children.length} разделов`}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
         {products.length ? (
           <section className="product-grid" aria-label={`Товары категории ${category.name}`}>
             {products.map((product) => (
@@ -42,13 +75,22 @@ export default async function CategoryPage({ params }: PageProps) {
               </Link>
             ))}
           </section>
-        ) : <p className="notice">В этой категории пока нет товаров.</p>}
+        ) : children.length === 0 && <p className="notice">В этой категории пока нет товаров.</p>}
       </div>
     );
   } catch (error) {
     if (error instanceof ApiError && error.message.includes("404")) notFound();
     throw error;
   }
+}
+
+function findCategory(categories: CategoryTree[], id: number): CategoryTree | undefined {
+  for (const category of categories) {
+    if (category.id === id) return category;
+    const found = findCategory(category.children, id);
+    if (found) return found;
+  }
+  return undefined;
 }
 
 function formatPrice(price: string): string {

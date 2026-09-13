@@ -199,6 +199,7 @@ async def import_catalog(
                     "SELECT setval(pg_get_serial_sequence(:table_name, 'id'), "
                     f"COALESCE((SELECT MAX(id) FROM {table_name}), 1), true)"
                 ),
+                {"table_name": table_name},
             )
         await session.commit()
     return imported_images

@@ -18,5 +18,7 @@ html body .purchase-card .price { margin: 0 !important; }
 /* A catalogue description may contain lengthy technical notes and specifications. */
 html body .product-details { position: static; }
 html body .product-description { color: var(--muted); font-size: 16px; line-height: 1.58; margin: 26px 0 21px; max-width: 66ch; overflow-wrap: anywhere; text-align: left; }
+/* Nested sections from the legacy catalogue remain visible after opening a parent. */
+.subcategories { margin: 0 0 42px; }.subcategories > h2 { font-size: clamp(30px, 3vw, 42px); letter-spacing: -.045em; margin: 0 0 22px; }
 html body .product-description p { margin: 0; white-space: pre-line; }
 html body .product-description p + p { margin-top: 18px; }

@@ -6,18 +6,28 @@ CLI. Результат: архивный ``legacy-mysql.sql.gz``, ``catalog.jso
 с неизменными именами ``<prefix>/{categories,products}/<legacy filename>``.
 """
 
+# /// script
+# requires-python = ">=3.9"
+# dependencies = [
+#   "pymysql>=1.1.2",
+# ]
+# ///
+
 from __future__ import annotations
 
 import argparse
 import json
+import os
 import subprocess
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qs, unquote, urlsplit
 
-from migrate_legacy_catalog import load_legacy_rows, validate_image_source
+import pymysql
 
-from avanti.config import get_settings
+LEGACY_TABLES = ("categories", "products", "category_images", "product_images")
 
 
 def parse_args() -> argparse.Namespace:
@@ -28,7 +38,70 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--s3-prefix", required=True, help="например avanti-legacy/2026-09-12")
     parser.add_argument("--s3-endpoint-url", required=True, help="S3 endpoint YC")
     parser.add_argument("--upload", action="store_true", help="фактически загрузить в S3")
+    parser.add_argument(
+        "--skip-missing-images",
+        action="store_true",
+        help="исключить из снимка ссылки на отсутствующие файлы вместо отмены экспорта",
+    )
     return parser.parse_args()
+
+
+def load_legacy_rows(database_url: str) -> dict[str, list[Mapping[str, Any]]]:
+    """Read legacy MySQL directly, without SQLAlchemy/greenlet dependencies."""
+    parsed = urlsplit(database_url)
+    if parsed.scheme not in {"mysql", "mysql+pymysql"}:
+        raise SystemExit("AVANTI_LEGACY_DATABASE_URL должен начинаться с mysql+pymysql://")
+    if not parsed.hostname or not parsed.username or not parsed.path.strip("/"):
+        raise SystemExit("В AVANTI_LEGACY_DATABASE_URL укажите хост, пользователя и имя базы")
+    query = parse_qs(parsed.query)
+    connection = pymysql.connect(
+        host=parsed.hostname,
+        port=parsed.port or 3306,
+        user=unquote(parsed.username),
+        password=unquote(parsed.password or ""),
+        database=unquote(parsed.path.lstrip("/")),
+        charset=query.get("charset", ["utf8mb4"])[0],
+        cursorclass=pymysql.cursors.DictCursor,
+    )
+    try:
+        with connection.cursor() as cursor:
+            result: dict[str, list[Mapping[str, Any]]] = {}
+            for table_name in LEGACY_TABLES:
+                cursor.execute(f"SELECT * FROM `{table_name}` ORDER BY `id`")
+                result[table_name] = list(cursor.fetchall())
+            return result
+    finally:
+        connection.close()
+
+
+def validate_image_source(
+    rows: dict[str, list[Mapping[str, Any]]], images_root: Path
+) -> list[Path]:
+    missing: list[Path] = []
+    for table_name, scope in (("category_images", "categories"), ("product_images", "products")):
+        for row in rows[table_name]:
+            filename = row.get("filename")
+            path = images_root / scope / str(filename)
+            if not filename or not path.is_file():
+                missing.append(path)
+    return missing
+
+
+def drop_missing_image_rows(
+    rows: dict[str, list[Mapping[str, Any]]], images_root: Path
+) -> int:
+    """Remove stale DB image references, preserving their products/categories."""
+    skipped = 0
+    for table_name, scope in (("category_images", "categories"), ("product_images", "products")):
+        kept: list[Mapping[str, Any]] = []
+        for row in rows[table_name]:
+            filename = row.get("filename")
+            if filename and (images_root / scope / str(filename)).is_file():
+                kept.append(row)
+            else:
+                skipped += 1
+        rows[table_name] = kept
+    return skipped
 
 
 def write_snapshot(output_dir: Path, rows: dict[str, list[dict[str, Any]]], prefix: str) -> Path:
@@ -70,14 +143,24 @@ def upload_images(images_root: Path, bucket: str, prefix: str, endpoint_url: str
 
 def main() -> None:
     args = parse_args()
-    settings = get_settings()
-    if not settings.legacy_database_url:
+    database_url = os.environ.get("AVANTI_LEGACY_DATABASE_URL")
+    if not database_url:
         raise SystemExit("Задайте AVANTI_LEGACY_DATABASE_URL в окружении старой ВМ")
-    rows = load_legacy_rows(settings.legacy_database_url)
+    rows = load_legacy_rows(database_url)
     missing = validate_image_source(rows, args.images_root)
     image_count = len(rows["category_images"]) + len(rows["product_images"])
     if missing:
-        raise SystemExit(f"Не найдены {len(missing)} из {image_count} файлов; экспорт отменён")
+        if args.skip_missing_images:
+            skipped = drop_missing_image_rows(rows, args.images_root)
+            print(f"Skipped {skipped} stale image reference(s).")
+        else:
+            preview = "\n".join(f"  - {path}" for path in missing[:20])
+            remainder = "" if len(missing) <= 20 else f"\n  … ещё {len(missing) - 20}"
+            raise SystemExit(
+                f"Не найдены {len(missing)} из {image_count} файлов; экспорт отменён:\n"
+                f"{preview}{remainder}\n"
+                "Повторите с --skip-missing-images, чтобы перенести товары без этих фото."
+            )
     snapshot = write_snapshot(args.output_dir, rows, args.s3_prefix)
     print(f"Snapshot: {snapshot}")
     print(f"Catalog: {len(rows['categories'])} categories, {len(rows['products'])} products")
