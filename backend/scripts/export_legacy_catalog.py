@@ -19,9 +19,10 @@ import argparse
 import json
 import os
 import subprocess
+from collections.abc import Mapping
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 from urllib.parse import parse_qs, unquote, urlsplit
 
 import pymysql
