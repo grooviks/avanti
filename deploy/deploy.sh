@@ -3,14 +3,14 @@ set -eu
 
 APP_DIR=${APP_DIR:-/opt/avanti}
 COMPOSE_FILE=${COMPOSE_FILE:-$APP_DIR/compose.prod.yaml}
-IMAGE_TAG=${1:-}
+REQUESTED_IMAGE_TAG=${1:-}
 
-if [ -z "$IMAGE_TAG" ]; then
+if [ -z "$REQUESTED_IMAGE_TAG" ]; then
   echo "Usage: $0 <immutable-image-tag>" >&2
   exit 2
 fi
 
-case "$IMAGE_TAG" in
+case "$REQUESTED_IMAGE_TAG" in
   *[!0-9a-f]*)
     echo "Image tag must be a commit SHA." >&2
     exit 2
@@ -23,15 +23,19 @@ set -a
 . ./.env
 set +a
 
+# .env keeps the last successful deployment for Compose. It must never
+# override the immutable tag explicitly requested for this deployment.
+IMAGE_TAG=$REQUESTED_IMAGE_TAG
+export IMAGE_TAG
+
 [ -f "$SECRETS_DIR/database_url" ] || { echo "Missing database_url secret." >&2; exit 1; }
 [ -f "$SECRETS_DIR/secret_key" ] || { echo "Missing secret_key secret." >&2; exit 1; }
 
 if grep -q '^IMAGE_TAG=' .env; then
-  sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$IMAGE_TAG/" .env
+  sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=$REQUESTED_IMAGE_TAG/" .env
 else
-  printf '\nIMAGE_TAG=%s\n' "$IMAGE_TAG" >> .env
+  printf '\nIMAGE_TAG=%s\n' "$REQUESTED_IMAGE_TAG" >> .env
 fi
-export IMAGE_TAG
 
 iam_token=$(curl --fail --silent --header Metadata-Flavor:Google \
   http://169.254.169.254/computeMetadata/v1/instance/service-accounts/default/token \

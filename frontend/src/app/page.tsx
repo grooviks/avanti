@@ -1,6 +1,7 @@
 import Link from "next/link";
 
-import { ApiError, getCategories, mediaUrl } from "@/lib/api";
+import { ApiError, getCategories } from "@/lib/api";
+import { categoryCover } from "@/lib/category-cover";
 
 export const revalidate = 60;
 
@@ -29,19 +30,22 @@ export default async function HomePage() {
         </section>
         {categories.length ? (
           <section className="category-grid" aria-label="Категории каталога">
-            {categories.map((category) => (
-              <Link className="category-card" href={`/category/${category.id}`} key={category.id}>
-                {category.images[0] ? (
-                  <img alt={category.images[0].alt ?? category.name} src={mediaUrl(category.images[0].url)} />
-                ) : (
-                  <div className="image-placeholder" aria-hidden="true" />
-                )}
-                <div>
-                  <h2>{category.name}</h2>
-                  <p>{category.description ?? `${category.children.length} разделов`}</p>
-                </div>
-              </Link>
-            ))}
+            {categories.map((category) => {
+              const cover = categoryCover(category);
+              return (
+                <Link className="category-card" href={`/category/${category.id}`} key={category.id}>
+                  {cover ? (
+                    <img alt={cover.alt} src={cover.src} />
+                  ) : (
+                    <div className="image-placeholder" aria-hidden="true" />
+                  )}
+                  <div>
+                    <h2>{category.name}</h2>
+                    <p>{category.description ?? `${category.children.length} разделов`}</p>
+                  </div>
+                </Link>
+              );
+            })}
           </section>
         ) : (
           <div className="notice"><h2>Каталог наполняется</h2><p>Позвоните нам — подберём мебель и расскажем о доступных коллекциях.</p><a href="tel:+74955210093">Позвонить в салон</a></div>
