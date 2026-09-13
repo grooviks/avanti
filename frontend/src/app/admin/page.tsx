@@ -1,12 +1,5 @@
-import type { Metadata } from "next";
-
-import { AdminPanel } from "./admin-panel";
-
-export const metadata: Metadata = {
-  title: "Админка — Avantistyle",
-  description: "Управление каталогом Avantistyle.",
-};
+import { redirect } from "next/navigation";
 
 export default function AdminPage() {
-  return <AdminPanel />;
+  redirect("/admin/products");
 }

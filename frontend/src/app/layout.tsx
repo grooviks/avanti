@@ -1,11 +1,23 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 import "./brand-overrides.css";
 
 export const metadata: Metadata = {
+  metadataBase: getSiteUrl(),
   title: "Avantistyle — мебельный салон",
   description: "Мебель для дома, кухни и офиса. Салон Avantistyle в Балашихе.",
+  alternates: { canonical: "/" },
+  robots: { index: true, follow: true },
+  openGraph: {
+    type: "website",
+    locale: "ru_RU",
+    siteName: "Avantistyle",
+    title: "Avantistyle — мебельный салон",
+    description: "Мебель для дома, кухни и офиса. Салон Avantistyle в Балашихе.",
+  },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

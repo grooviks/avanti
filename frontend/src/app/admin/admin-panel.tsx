@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 
 import type { components } from "@/lib/openapi";
 
@@ -11,6 +12,7 @@ type CategoryTree = components["schemas"]["CategoryTreeOut"];
 type Product = components["schemas"]["ProductOut"];
 type User = components["schemas"]["UserOut"];
 type ImageInput = { url: string; alt: string; position: number };
+export type AdminSection = "products" | "categories";
 
 type ProductForm = {
   id: number | null;
@@ -90,7 +92,7 @@ function productToForm(product: Product): ProductForm {
   };
 }
 
-export function AdminPanel() {
+export function AdminPanel({ section }: { section: AdminSection }) {
   const [token, setToken] = useState<string | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -107,6 +109,7 @@ export function AdminPanel() {
   const [error, setError] = useState<string | null>(null);
   const [categoryName, setCategoryName] = useState("");
   const [categoryDescription, setCategoryDescription] = useState("");
+  const [categoryParentId, setCategoryParentId] = useState("");
   const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
   const [editingCategoryDescription, setEditingCategoryDescription] = useState("");
   const [categoryImage, setCategoryImage] = useState<File | null>(null);
@@ -320,10 +323,18 @@ export function AdminPanel() {
       await api("admin/categories", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: categoryName.trim(), slug, description: categoryDescription.trim() || null, position: flatCategories.length, images }),
+        body: JSON.stringify({
+          name: categoryName.trim(),
+          slug,
+          description: categoryDescription.trim() || null,
+          position: flatCategories.length,
+          parent_id: categoryParentId ? Number(categoryParentId) : null,
+          images,
+        }),
       }, token);
       setCategoryName("");
       setCategoryDescription("");
+      setCategoryParentId("");
       setCategoryImage(null);
       setMessage("Категория создана.");
       await loadCatalog(token);
@@ -404,17 +415,41 @@ export function AdminPanel() {
     );
   }
 
-  return (
-    <main className={styles.adminPage}>
-      <header className={styles.adminHeader}>
-        <div><p className={styles.eyebrow}>Avantistyle · админка</p><h1>Каталог мебели</h1></div>
-        <div className={styles.headerActions}><span>{user.email}</span><button onClick={logout} className={styles.textButton}>Выйти</button></div>
-      </header>
+  const isProducts = section === "products";
+  const catalogPanel = (
+    <aside className={styles.catalogPanel}>
+      <div className={styles.panelHeading}>
+        <div>
+          <p className={styles.eyebrow}>{isProducts ? "Товары по категориям" : "Структура каталога"}</p>
+          <h2>{isProducts ? "Товары" : "Категории"} <span className={treeStyles.catalogTitleCount}>{isProducts ? products.length : flatCategories.length}</span></h2>
+        </div>
+        <button onClick={() => token && void loadCatalog(token)} className={styles.textButton} disabled={loading}>{loading ? "Обновляем…" : "Обновить"}</button>
+      </div>
+      <input className={styles.search} value={query} onChange={(event) => setQuery(event.target.value)} placeholder={isProducts ? "Поиск категории или товара" : "Поиск категории"} />
+      <div className={treeStyles.categoryList}>{categoryGroups.map(({ category, products: groupedProducts }) => {
+        const isOpen = isProducts && (expandedCategories.includes(category.id) || Boolean(query));
+        return <section key={category.id} className={treeStyles.categoryGroup}>
+          <div className={treeStyles.categoryHeader}>
+            <button type="button" className={treeStyles.categoryToggle} onClick={isProducts ? () => toggleCategory(category.id) : undefined} aria-expanded={isProducts ? isOpen : undefined}>
+              <span className={treeStyles.categoryLabel}>{category.images[0] ? <img src={apiUrl(category.images[0].url)} alt="" /> : <i aria-hidden="true" />}<span><strong>{category.parent_id ? "— " : ""}{category.name}</strong><small>{isProducts ? `${groupedProducts.length} ${groupedProducts.length === 1 ? "товар" : "товаров"}` : category.description || "Подпись не добавлена"}</small></span></span>
+              {isProducts && <b aria-hidden="true">{isOpen ? "−" : "+"}</b>}
+            </button>
+            {!isProducts && <>
+              <button type="button" className={treeStyles.categoryText} onClick={() => editCategoryDescription(category)} title="Редактировать подпись категории">Текст</button>
+              <label className={treeStyles.categoryPhoto} title={category.images[0] ? "Заменить фото категории" : "Добавить фото категории"}>{categoryUploadingId === category.id ? "…" : "Фото"}<input type="file" accept="image/*" onChange={(event) => void replaceCategoryImage(category, event.target.files)} disabled={categoryUploadingId === category.id} /></label>
+              <button type="button" className={treeStyles.categoryDelete} onClick={() => void deleteCategory(category, groupedProducts.length)} title="Удалить категорию" aria-label={`Удалить категорию ${category.name}`}>×</button>
+            </>}
+          </div>
+          {!isProducts && editingCategoryId === category.id && <form className={treeStyles.categoryDescriptionEditor} onSubmit={(event) => void saveCategoryDescription(event, category)}><label>Подпись в каталоге<textarea value={editingCategoryDescription} onChange={(event) => setEditingCategoryDescription(event.target.value)} placeholder="Коротко опишите категорию" rows={2} /></label><span><button type="button" onClick={() => setEditingCategoryId(null)}>Отмена</button><button type="submit" disabled={saving}>{saving ? "Сохраняем…" : "Сохранить"}</button></span></form>}
+          {isProducts && isOpen && <div className={`${styles.productList} ${treeStyles.groupProducts}`}>{groupedProducts.map((product) => <article key={product.id} className={styles.productRow}><button type="button" className={styles.editProduct} onClick={() => { setForm(productToForm(product)); setMessage(null); }}><span className={styles.productThumb}>{product.images[0] && <img src={apiUrl(product.images[0].url)} alt="" />}</span><span><strong>{product.name}</strong><small>{product.price} ₽ · {product.in_stock ? "в наличии" : "нет в наличии"}</small></span></button><button type="button" className={styles.deleteButton} onClick={() => void deleteProduct(product)} aria-label={`Удалить ${product.name}`}>×</button></article>)}</div>}
+        </section>;
+      })}</div>
+      {categoryGroups.length === 0 && <p className={styles.empty}>{isProducts ? "Подходящих категорий или товаров нет." : "Подходящих категорий нет."}</p>}
+    </aside>
+  );
 
-      {(error || message) && <p className={error ? styles.error : styles.success} role="status">{error ?? message}</p>}
-
-      <section className={styles.workspace}>
-        <form className={styles.productEditor} onSubmit={saveProduct}>
+  const productEditor = (
+    <form className={styles.productEditor} onSubmit={saveProduct}>
           <div className={styles.editorHeading}>
             <div><p className={styles.eyebrow}>{form.id ? "Редактирование" : "Новый товар"}</p><h2>{form.id ? form.name || "Товар" : "Добавить товар"}</h2></div>
             {form.id && <button type="button" className={styles.textButton} onClick={() => setForm(emptyProduct())}>Новый товар</button>}
@@ -433,32 +468,30 @@ export function AdminPanel() {
             {form.images.length > 0 && <div className={styles.imageList}>{form.images.map((image, index) => <figure key={`${image.url}-${index}`}><img src={apiUrl(image.url)} alt={image.alt || form.name || "Фотография товара"} /><button type="button" aria-label="Убрать фотографию" onClick={() => setForm({ ...form, images: form.images.filter((_, imageIndex) => imageIndex !== index) })}>×</button></figure>)}</div>}
           </div>
           <button className={styles.primaryButton} disabled={saving || uploading || flatCategories.length === 0}>{saving ? "Сохраняем…" : form.id ? "Сохранить изменения" : "Опубликовать товар"}</button>
-        </form>
+    </form>
+  );
 
-        <aside className={styles.catalogPanel}>
-          <div className={styles.panelHeading}><div><p className={styles.eyebrow}>Структура каталога</p><h2>Категории <span className={treeStyles.catalogTitleCount}>{products.length}</span></h2></div><button onClick={() => token && void loadCatalog(token)} className={styles.textButton} disabled={loading}>{loading ? "Обновляем…" : "Обновить"}</button></div>
-          <input className={styles.search} value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Поиск категории или товара" />
-          <div className={treeStyles.categoryList}>{categoryGroups.map(({ category, products: groupedProducts }) => {
-            const isOpen = expandedCategories.includes(category.id) || Boolean(query);
-            return <section key={category.id} className={treeStyles.categoryGroup}>
-              <div className={treeStyles.categoryHeader}>
-                <button type="button" className={treeStyles.categoryToggle} onClick={() => toggleCategory(category.id)} aria-expanded={isOpen}><span className={treeStyles.categoryLabel}>{category.images[0] ? <img src={apiUrl(category.images[0].url)} alt="" /> : <i aria-hidden="true" />}<span><strong>{category.parent_id ? "— " : ""}{category.name}</strong><small>{groupedProducts.length} {groupedProducts.length === 1 ? "товар" : "товаров"}</small></span></span><b aria-hidden="true">{isOpen ? "−" : "+"}</b></button>
-                <button type="button" className={treeStyles.categoryText} onClick={() => editCategoryDescription(category)} title="Редактировать подпись категории">Текст</button>
-                <label className={treeStyles.categoryPhoto} title={category.images[0] ? "Заменить фото категории" : "Добавить фото категории"}>{categoryUploadingId === category.id ? "…" : "Фото"}<input type="file" accept="image/*" onChange={(event) => void replaceCategoryImage(category, event.target.files)} disabled={categoryUploadingId === category.id} /></label>
-                <button type="button" className={treeStyles.categoryDelete} onClick={() => void deleteCategory(category, groupedProducts.length)} title="Удалить категорию" aria-label={`Удалить категорию ${category.name}`}>×</button>
-              </div>
-              {editingCategoryId === category.id && <form className={treeStyles.categoryDescriptionEditor} onSubmit={(event) => void saveCategoryDescription(event, category)}><label>Подпись в каталоге<textarea value={editingCategoryDescription} onChange={(event) => setEditingCategoryDescription(event.target.value)} placeholder="Коротко опишите категорию" rows={2} /></label><span><button type="button" onClick={() => setEditingCategoryId(null)}>Отмена</button><button type="submit" disabled={saving}>{saving ? "Сохраняем…" : "Сохранить"}</button></span></form>}
-              {isOpen && <div className={`${styles.productList} ${treeStyles.groupProducts}`}>{groupedProducts.map((product) => <article key={product.id} className={styles.productRow}><button type="button" className={styles.editProduct} onClick={() => { setForm(productToForm(product)); setMessage(null); }}><span className={styles.productThumb}>{product.images[0] && <img src={apiUrl(product.images[0].url)} alt="" />}</span><span><strong>{product.name}</strong><small>{product.price} ₽ · {product.in_stock ? "в наличии" : "нет в наличии"}</small></span></button><button type="button" className={styles.deleteButton} onClick={() => void deleteProduct(product)} aria-label={`Удалить ${product.name}`}>×</button></article>)}</div>}
-            </section>;
-          })}</div>
-          {categoryGroups.length === 0 && <p className={styles.empty}>Подходящих категорий или товаров нет.</p>}
-        </aside>
-      </section>
-
-      <section className={styles.categorySection}>
+  const categoryCreator = (
+    <section className={styles.categorySection}>
         <div><p className={styles.eyebrow}>Структура каталога</p><h2>Категории</h2><p>{flatCategories.length ? flatCategories.map((category) => category.name).join(" · ") : "Создайте первую категорию — затем в неё можно добавлять товары."}</p></div>
-        <form className={styles.categoryForm} onSubmit={createCategory}><input value={categoryName} onChange={(event) => setCategoryName(event.target.value)} placeholder="Название категории" required /><label className={styles.categoryImageUpload}>Фото категории <input type="file" accept="image/*" onChange={(event) => setCategoryImage(event.target.files?.[0] ?? null)} />{categoryImage && <small>{categoryImage.name}</small>}</label><label className={styles.categoryDescription}>Подпись в каталоге<textarea value={categoryDescription} onChange={(event) => setCategoryDescription(event.target.value)} placeholder="Например: мягкая мебель для гостиной" rows={2} /></label><button className={styles.secondaryButton} disabled={saving}>{saving ? "Создаём…" : "Создать категорию"}</button></form>
-      </section>
+        <form className={styles.categoryForm} onSubmit={createCategory}><input value={categoryName} onChange={(event) => setCategoryName(event.target.value)} placeholder="Название категории" required /><label>Родительская категория<select value={categoryParentId} onChange={(event) => setCategoryParentId(event.target.value)}><option value="">Корневая категория</option>{flatCategories.map((category) => <option key={category.id} value={category.id}>{category.parent_id ? "— " : ""}{category.name}</option>)}</select></label><label className={styles.categoryImageUpload}>Фото категории <input type="file" accept="image/*" onChange={(event) => setCategoryImage(event.target.files?.[0] ?? null)} />{categoryImage && <small>{categoryImage.name}</small>}</label><label className={styles.categoryDescription}>Подпись в каталоге<textarea value={categoryDescription} onChange={(event) => setCategoryDescription(event.target.value)} placeholder="Например: мягкая мебель для гостиной" rows={2} /></label><button className={styles.secondaryButton} disabled={saving}>{saving ? "Создаём…" : "Создать категорию"}</button></form>
+    </section>
+  );
+
+  return (
+    <main className={styles.adminPage}>
+      <header className={styles.adminHeader}>
+        <div><p className={styles.eyebrow}>Avantistyle · админка</p><h1>Каталог мебели</h1></div>
+        <div className={styles.headerActions}><span>{user.email}</span><button onClick={logout} className={styles.textButton}>Выйти</button></div>
+      </header>
+      <nav className={styles.adminNav} aria-label="Разделы админки">
+        <Link className={isProducts ? styles.activeNavLink : undefined} href="/admin/products">Товары</Link>
+        <Link className={!isProducts ? styles.activeNavLink : undefined} href="/admin/categories">Категории</Link>
+      </nav>
+
+      {(error || message) && <p className={error ? styles.error : styles.success} role="status">{error ?? message}</p>}
+
+      {isProducts ? <section className={styles.workspace}>{productEditor}{catalogPanel}</section> : <section className={styles.categoryWorkspace}>{catalogPanel}{categoryCreator}</section>}
     </main>
   );
 }

@@ -1,8 +1,8 @@
 # Production deployment on one VM
 
-Avanti starts two containers: `web` (public on port `3001`) and `api` (available
-only to `web` on the Compose network). PostgreSQL remains installed on the VM.
-The setup does not need Nginx or a domain.
+Avanti starts two containers: `web` (proxied by Nginx) and `api` (available only
+to `web` on the Compose network). PostgreSQL remains installed on the VM.
+The public deployment uses Nginx and TLS; see [nginx/README.md](nginx/README.md).
 
 ## One-time VM setup
 
@@ -39,6 +39,7 @@ The setup does not need Nginx or a domain.
 6. Copy the initial catalogue/media through the migration procedure before the
    first public deploy. Uploaded media is persisted in the `avanti_media` Docker
    volume; include it in backups until the planned S3 migration.
+7. Configure Nginx, DNS and TLS using [nginx/README.md](nginx/README.md).
 
 ## CI configuration
 

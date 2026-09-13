@@ -44,8 +44,8 @@ export default async function CategoryPage({ params }: PageProps) {
         </section>
         {children.length > 0 && (
           <section className="subcategories" aria-label={`Разделы категории ${category.name}`}>
-            <p className="eyebrow">Выберите раздел</p>
-            <h2>Подкатегории</h2>
+            <p className="eyebrow">Выберите направление</p>
+            <h2>Коллекции</h2>
             <div className="category-grid">
               {children.map((child) => {
                 const cover = categoryCover(child);
@@ -67,17 +67,29 @@ export default async function CategoryPage({ params }: PageProps) {
           </section>
         )}
         {products.length ? (
-          <section className="product-grid" aria-label={`Товары категории ${category.name}`}>
-            {products.map((product) => (
-              <Link className="product-card" href={`/product/${product.id}`} key={product.id}>
-                {product.images[0] ? (
-                  <img alt={product.images[0].alt ?? product.name} src={mediaUrl(product.images[0].url)} />
-                ) : (
-                  <div className="image-placeholder" aria-hidden="true" />
-                )}
-                <div><h2>{product.name}</h2><p>{formatPrice(product.price)}</p></div>
-              </Link>
-            ))}
+          <section
+            className={children.length > 0 ? "direct-products" : undefined}
+            aria-label={`Товары категории ${category.name}`}
+          >
+            {children.length > 0 && (
+              <header className="direct-products-heading">
+                <p className="eyebrow">Можно выбрать сразу</p>
+                <h2>Отдельные модели</h2>
+                <p>Модели, которые доступны без перехода в одну из коллекций.</p>
+              </header>
+            )}
+            <div className="product-grid">
+              {products.map((product) => (
+                <Link className="product-card" href={`/product/${product.id}`} key={product.id}>
+                  {product.images[0] ? (
+                    <img alt={product.images[0].alt ?? product.name} src={mediaUrl(product.images[0].url)} />
+                  ) : (
+                    <div className="image-placeholder" aria-hidden="true" />
+                  )}
+                  <div><h2>{product.name}</h2><p>{formatPrice(product.price)}</p></div>
+                </Link>
+              ))}
+            </div>
           </section>
         ) : children.length === 0 && <p className="notice">В этой категории пока нет товаров.</p>}
       </div>

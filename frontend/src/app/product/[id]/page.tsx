@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 
 import { ApiError, getProduct, mediaUrl } from "@/lib/api";
 
+import { ProductGallery } from "../product-gallery";
+
 export const revalidate = 60;
 
 type PageProps = { params: Promise<{ id: string }> };
@@ -24,17 +26,14 @@ export default async function ProductPage({ params }: PageProps) {
       <div className="page-shell product-page">
         <Link className="back-link" href={`/category/${product.category_id}`}>← К категории</Link>
         <div className="product-layout">
-          <section className="gallery" aria-label={`Фотографии: ${product.name}`}>
-            {product.images.length ? <>
-              <figure className="gallery-main">
-                <img alt={product.images[0].alt ?? product.name} src={mediaUrl(product.images[0].url)} />
-                <figcaption>{product.images.length} {product.images.length === 1 ? "фото" : "фото в галерее"}</figcaption>
-              </figure>
-              {product.images.length > 1 && <div className="gallery-secondary">{product.images.slice(1).map((image) => (
-                <img alt={image.alt ?? product.name} key={image.id} src={mediaUrl(image.url)} />
-              ))}</div>}
-            </> : <div className="image-placeholder large" aria-hidden="true" />}
-          </section>
+          <ProductGallery
+            images={product.images.map((image) => ({
+              id: image.id,
+              url: mediaUrl(image.url),
+              alt: image.alt ?? null,
+            }))}
+            productName={product.name}
+          />
           <section className="product-details">
             <p className="eyebrow">Avantistyle · мебель для дома</p>
             <h1>{product.name}</h1>
