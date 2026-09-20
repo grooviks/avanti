@@ -1,5 +1,5 @@
 # Локальная инфраструктура для разработки бэкенда.
-# Продовый compose (api + web + nginx) появится в корне репозитория позже.
+# Production: ../compose.prod.yaml (api + web); Nginx и PostgreSQL — на хосте.
 services:
   postgres:
     image: postgres:17

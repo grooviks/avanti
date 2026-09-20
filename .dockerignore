@@ -1,6 +1,7 @@
 .git
 .github
 .idea
+.agents
 **/.env
 **/.venv
 **/__pycache__

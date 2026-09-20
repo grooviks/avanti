@@ -50,7 +50,7 @@ In GitHub repository settings create:
   into that registry.
 
 The workflow checks backend (`ruff`, migrations, `pytest`) against an isolated
-PostgreSQL service and frontend (`npm run build`) on every PR. A push to `main`
+PostgreSQL service and frontend (`npm run build`) on every PR targeting `master`. A push to `master`
 additionally publishes `avanti-api` and `avanti-web` with the commit SHA and
 `latest` tags.
 
