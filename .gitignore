@@ -53,6 +53,11 @@ automium_web.wsgi
 
 Thumbs.db
 Thumbs*
+.DS_Store
 
 ssl/
 ssl/*
+
+# Local assistant handoff notes. They document the working environment but
+# must never become part of the repository or a deployment artifact.
+.agents/project-context.md
